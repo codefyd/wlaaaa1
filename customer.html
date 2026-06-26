@@ -3,1180 +3,450 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>بطاقة الولاء | كافيه</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <title>صفحة العميل | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/config.js"></script>
-  <link rel="stylesheet" href="staaa" />
 
   <style>
-    /* ══════════════════════════════════════════
-       CUSTOMER PAGE — OVERRIDES & EXCLUSIVE STYLES
-    ══════════════════════════════════════════ */
+    body {
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--secondary) 34%, transparent), transparent 35%),
+        radial-gradient(circle at bottom left, color-mix(in srgb, var(--primary) 18%, transparent), transparent 38%),
+        var(--bg);
+    }
 
-    /* Animated ambient background blobs */
-    body::before,
-    body::after {
+    .customer-app {
+      width: min(520px, calc(100% - 22px));
+      margin: 0 auto;
+      padding: 18px 0 32px;
+      min-height: 100vh;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: 24px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 22px 55px rgba(43, 33, 27, 0.2);
+      margin-bottom: 16px;
+    }
+
+    .hero-card::after {
       content: "";
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.13);
+      left: -80px;
+      top: -70px;
     }
 
-    body::before {
-      width: 520px;
-      height: 520px;
-      top: -160px;
-      left: -160px;
-      background: radial-gradient(circle, color-mix(in srgb, var(--secondary) 28%, transparent), transparent 70%);
-      animation: float 8s ease-in-out infinite;
-    }
-
-    body::after {
-      width: 400px;
-      height: 400px;
-      bottom: -120px;
-      right: -120px;
-      background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
-      animation: float 10s ease-in-out infinite reverse;
-    }
-
-    /* ── Page Shell ─────────────────────────── */
-    .c-app {
+    .hero-top {
       position: relative;
       z-index: 1;
-      width: min(500px, calc(100% - 24px));
-      margin: 0 auto;
-      padding: 20px 0 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    /* ── Hero Card ──────────────────────────── */
-    .c-hero {
-      position: relative;
-      overflow: hidden;
-      border-radius: 36px;
-      padding: 26px 24px 24px;
-      background: linear-gradient(145deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #fff;
-      box-shadow:
-        0 24px 60px color-mix(in srgb, var(--primary) 38%, transparent),
-        inset 0 1px 0 rgba(255,255,255,.22);
-    }
-
-    /* Decorative bubbles inside hero */
-    .c-hero-bubble {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.1);
-      pointer-events: none;
-    }
-    .c-hero-bubble:nth-child(1) { width: 240px; height: 240px; top: -80px; left: -80px; }
-    .c-hero-bubble:nth-child(2) { width: 140px; height: 140px; bottom: -50px; right: -40px; opacity: .7; }
-    .c-hero-bubble:nth-child(3) { width: 60px;  height: 60px;  top: 50%; right: 28px; opacity: .5; animation: float 6s ease-in-out infinite; }
-
-    .c-hero-content { position: relative; z-index: 1; }
-
-    .c-hero-top {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
+      gap: 12px;
     }
 
-    .c-logo {
-      width: 56px;
-      height: 56px;
-      border-radius: 20px;
-      background: rgba(255,255,255,.2);
-      border: 1.5px solid rgba(255,255,255,.3);
+    .merchant-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.18);
       display: grid;
       place-items: center;
-      font-size: 26px;
+      font-size: 28px;
       overflow: hidden;
-      flex-shrink: 0;
-      backdrop-filter: blur(10px);
+      flex: 0 0 auto;
     }
 
-    .c-logo img {
+    .merchant-logo img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .c-merchant-name {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: -.3px;
-    }
-
-    .c-merchant-sub {
-      font-size: 12px;
-      opacity: .75;
-      margin-top: 2px;
-    }
-
-    /* Loyalty digits display */
-    .c-digits {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .c-digits-main {
-      display: flex;
-      align-items: flex-end;
-      gap: 6px;
-    }
-
-    .c-cups-num {
-      font-size: 72px;
-      font-weight: 900;
-      line-height: .85;
-      letter-spacing: -4px;
-    }
-
-    .c-cups-denom {
-      font-size: 24px;
-      font-weight: 700;
-      opacity: .7;
-      margin-bottom: 6px;
-      letter-spacing: -1px;
-    }
-
-    .c-cups-label {
-      font-size: 12px;
-      opacity: .7;
-      margin-bottom: 10px;
-    }
-
-    .c-total-box {
-      text-align: left;
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 16px;
-      padding: 10px 14px;
-      min-width: 88px;
-    }
-
-    .c-total-num {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: -2px;
-      display: block;
-    }
-
-    .c-total-label {
-      font-size: 11px;
-      opacity: .7;
-    }
-
-    /* Segmented progress track */
-    .c-progress-track {
-      display: flex;
-      gap: 5px;
-      margin-bottom: 10px;
-    }
-
-    .c-segment {
-      flex: 1;
-      height: 6px;
-      border-radius: 99px;
-      background: rgba(255,255,255,.25);
-      transition: background .5s ease, transform .3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .c-segment.filled {
-      background: rgba(255,255,255,.9);
-    }
-
-    .c-segment.filled::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
-      animation: shimmer 2s infinite;
-      background-size: 200% 100%;
-    }
-
-    .c-segment.current {
-      background: rgba(255,255,255,.9);
-      animation: pulse 1.4s ease-in-out infinite;
-    }
-
-    .c-progress-text {
-      font-size: 12px;
-      opacity: .8;
-      line-height: 1.5;
-    }
-
-    /* Install strip */
-    .c-install-strip {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255,255,255,.15);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .c-install-label {
-      font-size: 12px;
-      opacity: .8;
-    }
-
-    .c-install-btn {
-      background: rgba(255,255,255,.2);
-      border: 1px solid rgba(255,255,255,.28);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* ── Cup Grid (visual stamp card) ──────── */
-    .c-stamps {
-      background: rgba(255,255,255,.88);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 20px;
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(14px);
-    }
-
-    .c-stamps-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .c-stamps-title {
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .c-stamps-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-
-    .c-stamp {
-      aspect-ratio: 1;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
+    .merchant-title {
       font-size: 22px;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .customer-welcome {
       position: relative;
-      transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+      z-index: 1;
+      margin-top: 22px;
     }
 
-    .c-stamp.empty {
-      background: color-mix(in srgb, var(--primary) 8%, transparent);
-      border: 2px dashed color-mix(in srgb, var(--primary) 20%, transparent);
-    }
-
-    .c-stamp.filled {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent);
-      animation: bounceIn .4s cubic-bezier(.34,1.56,.64,1) both;
-    }
-
-    .c-stamp.filled:hover {
-      transform: scale(1.08) rotate(-3deg);
-    }
-
-    .c-stamp.reward {
-      background: linear-gradient(135deg, #2F855A, #48BB78);
-      box-shadow: 0 6px 16px rgba(47, 133, 90, 0.35);
-    }
-
-    .c-stamp-num {
-      position: absolute;
-      bottom: 3px;
-      right: 5px;
-      font-size: 9px;
-      font-weight: 900;
-      color: rgba(255,255,255,.7);
-    }
-
-    /* ── Roulette Section ───────────────────── */
-    .c-roulette {
-      background: rgba(255,255,255,.88);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 22px;
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(14px);
-      text-align: center;
-    }
-
-    .c-roulette-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .c-roulette-badge {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 3px 9px;
-      border-radius: 99px;
-      letter-spacing: .5px;
-    }
-
-    .c-roulette-title {
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .c-roulette-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    /* Wheel */
-    .c-wheel-wrap {
-      position: relative;
-      width: min(280px, 78vw);
-      margin: 0 auto 20px;
-    }
-
-    /* Outer glow ring */
-    .c-wheel-glow {
-      position: absolute;
-      inset: -12px;
-      border-radius: 50%;
-      background: conic-gradient(
-        color-mix(in srgb, var(--primary) 40%, transparent),
-        color-mix(in srgb, var(--secondary) 40%, transparent),
-        color-mix(in srgb, var(--primary) 40%, transparent)
-      );
-      filter: blur(14px);
-      opacity: 0;
-      transition: opacity .4s;
-    }
-
-    .c-wheel-wrap.spinning .c-wheel-glow {
-      opacity: 1;
-      animation: spin 1s linear infinite;
-    }
-
-    .c-wheel-pointer {
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 4;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));
-    }
-
-    .c-wheel-pointer svg {
-      width: 28px;
-      height: 34px;
-    }
-
-    .c-wheel-canvas {
-      width: min(280px, 78vw);
-      height: min(280px, 78vw);
-      border-radius: 50%;
-      position: relative;
-      transition: transform 4.2s cubic-bezier(.08,.82,.12,1);
-      border: 10px solid rgba(255,255,255,.9);
-      box-shadow:
-        0 20px 40px rgba(43,33,27,.2),
-        inset 0 0 0 2px rgba(255,255,255,.5),
-        0 0 0 1px var(--border);
-      display: grid;
-      place-items: center;
-    }
-
-    .c-wheel-canvas canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-    }
-
-    .c-wheel-center {
-      position: absolute;
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #fff;
-      display: grid;
-      place-items: center;
-      font-size: 30px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.18), 0 0 0 4px rgba(255,255,255,.8);
-      z-index: 3;
-    }
-
-    /* Spin result */
-    .c-spin-result {
-      display: none;
-      border-radius: 20px;
-      padding: 16px;
-      margin-top: 14px;
-      font-weight: 900;
-      font-size: 16px;
-      line-height: 1.6;
-      animation: bounceIn .5s cubic-bezier(.34,1.56,.64,1);
-    }
-
-    .c-spin-result.show { display: block; }
-
-    .c-spin-result.win {
-      background: rgba(47, 133, 90, 0.1);
-      border: 1.5px solid rgba(47, 133, 90, 0.25);
-      color: var(--success);
-    }
-
-    .c-spin-result.lose {
-      background: color-mix(in srgb, var(--primary) 6%, transparent);
-      border: 1.5px solid var(--border);
-      color: var(--muted);
-    }
-
-    .c-spin-btn {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff;
-      padding: 15px 20px;
-      font-size: 16px;
-      font-weight: 900;
-      border-radius: 18px;
-      width: 100%;
-      box-shadow: 0 10px 28px color-mix(in srgb, var(--primary) 35%, transparent);
-      letter-spacing: .3px;
-    }
-
-    .c-spin-btn:disabled {
-      background: color-mix(in srgb, var(--primary) 20%, transparent);
-      color: var(--muted);
-      box-shadow: none;
-    }
-
-    .c-spin-btn .ripple-circle {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.35);
-      animation: ripple .6s linear;
-      pointer-events: none;
-    }
-
-    /* ── Wallet Rewards ─────────────────────── */
-    .c-section {
-      background: rgba(255,255,255,.88);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 20px;
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(14px);
-    }
-
-    .c-section-title {
-      font-size: 16px;
-      font-weight: 900;
+    .customer-welcome p {
+      opacity: .88;
       margin-bottom: 4px;
     }
 
-    .c-section-sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 14px;
-      line-height: 1.5;
+    .customer-welcome h1 {
+      color: #fff;
+      font-size: 32px;
+      margin: 0;
     }
 
-    .c-reward-list {
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-    }
-
-    .c-reward-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      border-radius: 18px;
-      background: color-mix(in srgb, var(--success) 6%, transparent);
-      border: 1px solid color-mix(in srgb, var(--success) 18%, transparent);
-      animation: fadeSlideUp .3s ease both;
-    }
-
-    .c-reward-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #2F855A, #48BB78);
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(47,133,90,.28);
-    }
-
-    .c-reward-name {
-      font-weight: 800;
-      font-size: 14px;
-      margin-bottom: 2px;
-    }
-
-    .c-reward-exp {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* ── Transaction List ───────────────────── */
-    .c-tx-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .c-tx-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 14px;
+    .install-btn {
+      margin-top: 16px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.24);
+      color: #fff;
+      padding: 11px 14px;
       border-radius: 16px;
-      background: color-mix(in srgb, var(--primary) 5%, transparent);
-      border: 1px solid var(--border);
-      animation: fadeSlideUp .3s ease both;
-      transition: background .15s;
-    }
-
-    .c-tx-item:hover {
-      background: color-mix(in srgb, var(--primary) 9%, transparent);
-    }
-
-    .c-tx-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      display: grid;
-      place-items: center;
-      font-size: 17px;
-      flex-shrink: 0;
-    }
-
-    .c-tx-name {
-      font-weight: 800;
       font-size: 14px;
-      margin-bottom: 2px;
     }
 
-    .c-tx-date {
-      font-size: 11px;
-      color: var(--muted);
+    .loyalty-card {
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      backdrop-filter: blur(14px);
     }
 
-    .c-tx-cups {
-      margin-right: auto;
-      font-size: 15px;
-      font-weight: 900;
+    .loyalty-number {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .loyalty-number strong {
+      font-size: 54px;
+      line-height: .9;
       color: var(--primary);
     }
 
-    /* ── Loading Overlay ────────────────────── */
-    .c-loading {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      transition: opacity .4s, visibility .4s;
+    .loyalty-number span {
+      color: var(--muted);
+      font-weight: 800;
     }
 
-    .c-loading.hidden {
-      opacity: 0;
-      visibility: hidden;
+    .muted {
+      color: var(--muted);
+      line-height: 1.8;
     }
 
-    .c-loading-spinner {
-      width: 52px;
-      height: 52px;
+    .roulette-wrap {
+      text-align: center;
+    }
+
+    .wheel-shell {
+      width: min(300px, 82vw);
+      height: min(300px, 82vw);
+      margin: 14px auto 18px;
+      position: relative;
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 34px solid var(--primary);
+      z-index: 3;
+      filter: drop-shadow(0 5px 8px rgba(0,0,0,.2));
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      border: 4px solid var(--border);
-      border-top-color: var(--primary);
-      animation: spin .8s linear infinite;
+      border: 10px solid rgba(255,255,255,.88);
+      box-shadow:
+        0 18px 35px rgba(43, 33, 27, 0.2),
+        inset 0 0 0 2px rgba(255,255,255,.55);
+      background:
+        conic-gradient(
+          #8B8B8B 0deg 60deg,
+          #6F4E37 60deg 120deg,
+          #A77C52 120deg 180deg,
+          #C8A27A 180deg 240deg,
+          #2F855A 240deg 300deg,
+          #805AD5 300deg 360deg
+        );
+      transition: transform 4s cubic-bezier(.12,.8,.18,1);
+      position: relative;
+      overflow: hidden;
     }
 
-    .c-loading-logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 28px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    .wheel::after {
+      content: "☕";
+      position: absolute;
+      inset: 50%;
+      transform: translate(-50%, -50%);
+      width: 74px;
+      height: 74px;
+      border-radius: 999px;
+      background: #fff;
       display: grid;
       place-items: center;
-      font-size: 36px;
-      box-shadow: 0 14px 36px color-mix(in srgb, var(--primary) 35%, transparent);
-      animation: float 3s ease-in-out infinite;
+      font-size: 32px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
     }
 
-    .c-loading-text {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
+    .wheel-labels {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
     }
 
-    /* ── Error State ────────────────────────── */
-    .c-error {
+    .result-card {
       display: none;
-      min-height: 60vh;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 12px;
-      padding: 40px 20px;
-    }
-
-    .c-error.show { display: flex; }
-
-    .c-error-icon {
-      font-size: 56px;
-      animation: float 4s ease-in-out infinite;
-    }
-
-    .c-error-title {
-      font-size: 22px;
+      margin-top: 14px;
+      border-radius: 22px;
+      padding: 16px;
+      background: rgba(47, 133, 90, 0.08);
+      border: 1px solid rgba(47, 133, 90, 0.18);
+      color: var(--success);
       font-weight: 900;
+      line-height: 1.8;
     }
 
-    .c-error-msg {
+    .result-card.show {
+      display: block;
+    }
+
+    .wallet-list,
+    .tx-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .wallet-item,
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    .wallet-item strong,
+    .tx-item strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
       color: var(--muted);
-      font-size: 14px;
-      max-width: 300px;
-      line-height: 1.7;
+      line-height: 1.8;
+      text-align: center;
     }
 
-    /* ── Confetti burst (canvas overlay) ───── */
-    #confettiCanvas {
+    .modal {
+      display: none;
       position: fixed;
       inset: 0;
-      pointer-events: none;
-      z-index: 300;
+      background: rgba(0,0,0,.42);
+      z-index: 50;
+      padding: 18px;
+      place-items: center;
     }
 
-    /* ── Customer name chip ─────────────────── */
-    .c-name-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.28);
-      border-radius: 99px;
-      padding: 5px 12px 5px 8px;
-      font-size: 13px;
-      margin-bottom: 12px;
+    .modal.show {
+      display: grid;
     }
 
-    .c-name-chip-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 0 3px rgba(74,222,128,.3);
-      animation: pulse 2s infinite;
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.25);
     }
 
-    /* ── Next reward preview ────────────────── */
-    .c-next-reward {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 12px;
-      padding: 8px 12px;
-      margin-top: 12px;
-      font-size: 12px;
+    .modal-card ol {
+      line-height: 2;
+      padding-right: 22px;
     }
 
-    .c-next-reward-icon { font-size: 16px; }
-
-    /* ═══════════════════════════════════════
-       RESPONSIVE
-    ═══════════════════════════════════════ */
     @media (max-width: 480px) {
-      .c-hero { border-radius: 30px; padding: 22px 20px 20px; }
-      .c-cups-num { font-size: 60px; }
-      .c-stamps-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
-      .c-stamp { border-radius: 10px; }
+      .hero-card {
+        border-radius: 28px;
+        padding: 20px;
+      }
+
+      .customer-welcome h1 {
+        font-size: 28px;
+      }
+
+      .loyalty-number strong {
+        font-size: 46px;
+      }
     }
   </style>
 </head>
 
 <body>
+  <main class="customer-app">
+    <section id="loadingCard" class="loyalty-card">
+      <h2>جاري تحميل صفحة العميل...</h2>
+      <p class="muted">ثواني بسيطة ونجهز لك بيانات الولاء.</p>
+    </section>
 
-  <!-- Loading overlay -->
-  <div id="loadingOverlay" class="c-loading">
-    <div class="c-loading-logo">☕</div>
-    <div class="c-loading-spinner"></div>
-    <p class="c-loading-text">جاري تحميل بطاقتك...</p>
-  </div>
+    <section id="errorCard" class="loyalty-card" style="display:none;">
+      <h2>تعذر فتح الصفحة</h2>
+      <p id="errorText" class="muted">الرابط غير صالح أو منتهي.</p>
+    </section>
 
-  <!-- Confetti canvas -->
-  <canvas id="confettiCanvas"></canvas>
-
-  <main class="c-app">
-
-    <!-- Error state -->
-    <div id="errorState" class="c-error">
-      <div class="c-error-icon">😕</div>
-      <h2 class="c-error-title">تعذر فتح الصفحة</h2>
-      <p id="errorText" class="c-error-msg">الرابط غير صالح أو منتهي الصلاحية.</p>
-    </div>
-
-    <!-- App content (hidden until loaded) -->
-    <div id="appContent" style="display:none; display:contents;">
-
-      <!-- ── HERO CARD ─────────────────────── -->
-      <section class="c-hero">
-        <div class="c-hero-bubble"></div>
-        <div class="c-hero-bubble"></div>
-        <div class="c-hero-bubble"></div>
-
-        <div class="c-hero-content">
-          <div class="c-hero-top">
-            <div id="merchantLogo" class="c-logo">☕</div>
-            <div>
-              <div class="c-merchant-name" id="merchantName">كافيه</div>
-              <div class="c-merchant-sub">بطاقة الولاء الرقمية</div>
-            </div>
+    <div id="appContent" style="display:none;">
+      <section class="hero-card">
+        <div class="hero-top">
+          <div id="merchantLogo" class="merchant-logo">☕</div>
+          <div>
+            <p class="merchant-title" id="merchantName">كافيه</p>
+            <p style="margin:4px 0 0;opacity:.85;">بطاقة الولاء الرقمية</p>
           </div>
+        </div>
 
-          <div class="c-name-chip">
-            <span class="c-name-chip-dot"></span>
-            <span>متصل الآن</span>
-          </div>
-
-          <div id="welcomeTitle" style="font-size:28px;font-weight:900;margin-bottom:16px;letter-spacing:-.5px;">
-            أهلًا، <span id="customerName">عميلنا</span> 👋
-          </div>
-
-          <!-- Progress digits -->
-          <div class="c-digits">
-            <div class="c-digits-main">
-              <span class="c-cups-num" id="currentCups">0</span>
-              <div>
-                <div class="c-cups-denom">/<span id="cupsRequired">10</span></div>
-                <div class="c-cups-label">كوب</div>
-              </div>
-            </div>
-
-            <div class="c-total-box">
-              <span class="c-total-num" id="totalCups">0</span>
-              <span class="c-total-label">إجمالي الأكواب</span>
-            </div>
-          </div>
-
-          <!-- Segmented dots progress -->
-          <div id="progressTrack" class="c-progress-track"></div>
-
-          <p id="progressText" class="c-progress-text">-</p>
-
-          <!-- Next reward hint -->
-          <div id="nextRewardHint" class="c-next-reward" style="display:none;">
-            <span class="c-next-reward-icon">🎁</span>
-            <span id="nextRewardText">-</span>
-          </div>
-
-          <!-- Install strip -->
-          <div class="c-install-strip">
-            <span class="c-install-label">أضف البطاقة لشاشتك الرئيسية</span>
-            <button class="c-install-btn" id="installBtn" type="button">
-              ⊕ إضافة
-            </button>
-          </div>
+        <div class="customer-welcome">
+          <p>أهلًا بك</p>
+          <h1 id="customerName">عميلنا العزيز</h1>
+          <button id="installBtn" class="install-btn" type="button">
+            إضافة للشاشة الرئيسية
+          </button>
         </div>
       </section>
 
-      <!-- ── STAMP CARD ────────────────────── -->
-      <section class="c-stamps">
-        <div class="c-stamps-header">
-          <span class="c-stamps-title">طوابع الولاء</span>
-          <span class="pill" id="stampsLabel">0 / 10</span>
+      <section class="loyalty-card">
+        <div class="loyalty-number">
+          <div>
+            <span>رصيدك الحالي</span>
+            <strong>
+              <span id="currentCups">0</span>/<span id="cupsRequired">10</span>
+            </strong>
+          </div>
+
+          <div style="text-align:left;">
+            <span>الإجمالي</span>
+            <strong id="totalCups" style="font-size:34px;">0</strong>
+          </div>
         </div>
-        <div id="stampsGrid" class="c-stamps-grid"></div>
+
+        <div class="progress">
+          <span id="progressBar"></span>
+        </div>
+
+        <p id="progressText" class="muted" style="margin-top:12px;margin-bottom:0;">
+          -
+        </p>
       </section>
 
-      <!-- ── ROULETTE ──────────────────────── -->
-      <section class="c-roulette">
-        <div class="c-roulette-header">
-          <h2 class="c-roulette-title">روليت المكافآت</h2>
-          <span class="c-roulette-badge" id="rouletteBadge">جديد</span>
-        </div>
-        <p id="rouletteText" class="c-roulette-sub">
+      <section class="loyalty-card roulette-wrap">
+        <h2>روليت المكافآت</h2>
+        <p id="rouletteText" class="muted">
           بعد كل عملية شراء مؤهلة، تقدر تلعب الروليت وتحصل على مكافأة.
         </p>
 
-        <div id="wheelWrap" class="c-wheel-wrap">
-          <div class="c-wheel-glow"></div>
-
-          <div class="c-wheel-pointer">
-            <svg viewBox="0 0 28 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2 L26 32 Q14 26 2 32 Z" fill="var(--primary)" />
-              <circle cx="14" cy="4" r="4" fill="var(--secondary)" />
-            </svg>
-          </div>
-
-          <div id="wheelCanvas" class="c-wheel-canvas">
-            <canvas id="wheelRender"></canvas>
-            <div class="c-wheel-center" id="wheelCenter">☕</div>
-          </div>
+        <div class="wheel-shell">
+          <div class="wheel-pointer"></div>
+          <div id="wheel" class="wheel"></div>
         </div>
 
-        <button id="spinBtn" class="c-spin-btn" type="button" disabled>
-          🎰 العب الآن
+        <button id="spinBtn" class="full" type="button">
+          العب الآن
         </button>
 
-        <div id="spinResult" class="c-spin-result"></div>
-        <div id="spinMsg" class="alert" style="margin-top:10px;"></div>
+        <div id="spinResult" class="result-card"></div>
+        <div id="spinMsg" class="alert"></div>
       </section>
 
-      <!-- ── WALLET ────────────────────────── -->
-      <section class="c-section">
-        <h2 class="c-section-title">🎁 مكافآتي</h2>
-        <p class="c-section-sub">المكافآت المتاحة لديك في هذا الكافيه.</p>
-        <div id="walletList" class="c-reward-list"></div>
+      <section class="loyalty-card">
+        <h2>مكافآتي</h2>
+        <p class="muted">المكافآت المتاحة لديك في هذا الكافيه.</p>
+        <div id="walletList" class="wallet-list"></div>
       </section>
 
-      <!-- ── TRANSACTIONS ───────────────────── -->
-      <section class="c-section">
-        <h2 class="c-section-title">🕐 آخر الزيارات</h2>
-        <div id="txList" class="c-tx-list" style="margin-top:10px;"></div>
+      <section class="loyalty-card">
+        <h2>آخر الزيارات</h2>
+        <div id="txList" class="tx-list"></div>
       </section>
-
-    </div><!-- /appContent -->
-
+    </div>
   </main>
 
-  <!-- Install modal -->
   <div id="installModal" class="modal">
     <div class="modal-card">
-      <h2 style="font-size:20px;font-weight:900;margin-bottom:6px;">إضافة البطاقة للشاشة</h2>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:4px;">حافظ على بطاقتك دائمًا في متناولك</p>
-      <div id="installSteps"></div>
-      <button id="closeInstallModal" class="full" style="margin-top:16px;" type="button">تم</button>
+      <h2>إضافة الصفحة للشاشة الرئيسية</h2>
+      <div id="installSteps" class="muted"></div>
+      <button id="closeInstallModal" class="full" type="button">تم</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCRIPT
-  ══════════════════════════════════════════ -->
   <script>
-    /* ── Supabase init ─────────────────────── */
     const client = window.supabase.createClient(
       window.APP_CONFIG.SUPABASE_URL,
       window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
     );
 
     const params = new URLSearchParams(window.location.search);
-    const token  = params.get("token");
+    const token = params.get("token");
 
-    /* ── State ─────────────────────────────── */
-    let pageData             = null;
+    let pageData = null;
     let pendingTransactionId = null;
-    let currentRotation      = 0;
+    let currentRotation = 0;
 
-    /* ── DOM refs ──────────────────────────── */
-    const $  = id => document.getElementById(id);
-    const loadingOverlay = $("loadingOverlay");
-    const errorState     = $("errorState");
-    const errorText      = $("errorText");
-    const appContent     = $("appContent");
+    const loadingCard = document.getElementById("loadingCard");
+    const errorCard = document.getElementById("errorCard");
+    const errorText = document.getElementById("errorText");
+    const appContent = document.getElementById("appContent");
 
-    const merchantLogo   = $("merchantLogo");
-    const merchantName   = $("merchantName");
-    const customerName   = $("customerName");
-    const currentCups    = $("currentCups");
-    const cupsRequired   = $("cupsRequired");
-    const totalCups      = $("totalCups");
-    const progressTrack  = $("progressTrack");
-    const progressText   = $("progressText");
-    const nextRewardHint = $("nextRewardHint");
-    const nextRewardText = $("nextRewardText");
-    const stampsGrid     = $("stampsGrid");
-    const stampsLabel    = $("stampsLabel");
+    const merchantLogo = document.getElementById("merchantLogo");
+    const merchantName = document.getElementById("merchantName");
+    const customerName = document.getElementById("customerName");
 
-    const rouletteText   = $("rouletteText");
-    const rouletteBadge  = $("rouletteBadge");
-    const spinBtn        = $("spinBtn");
-    const spinMsg        = $("spinMsg");
-    const spinResult     = $("spinResult");
-    const wheelWrap      = $("wheelWrap");
-    const wheelCanvas    = $("wheelCanvas");
-    const wheelRender    = $("wheelRender");
-    const wheelCenter    = $("wheelCenter");
+    const currentCups = document.getElementById("currentCups");
+    const cupsRequired = document.getElementById("cupsRequired");
+    const totalCups = document.getElementById("totalCups");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
 
-    const walletList     = $("walletList");
-    const txList         = $("txList");
-    const installBtn     = $("installBtn");
-    const installModal   = $("installModal");
-    const installSteps   = $("installSteps");
-    const closeInstall   = $("closeInstallModal");
+    const rouletteText = document.getElementById("rouletteText");
+    const spinBtn = document.getElementById("spinBtn");
+    const spinMsg = document.getElementById("spinMsg");
+    const spinResult = document.getElementById("spinResult");
+    const wheel = document.getElementById("wheel");
 
-    /* ── Wheel segments ────────────────────── */
-    const SEGMENTS = [
-      { label: "حظ أوفر",     color: "#9CA3AF", emoji: "😅" },
-      { label: "قهوة مجانية", color: "#6F4E37", emoji: "☕" },
-      { label: "خصم 10%",     color: "#A77C52", emoji: "🎫" },
-      { label: "حظ أوفر",     color: "#C8A27A", emoji: "😅" },
-      { label: "مشروب مجاني", color: "#2F855A", emoji: "🧃" },
-      { label: "بطاقة هدية",  color: "#805AD5", emoji: "🎁" },
-    ];
+    const walletList = document.getElementById("walletList");
+    const txList = document.getElementById("txList");
 
-    /* ── Draw wheel on canvas ──────────────── */
-    function drawWheel() {
-      const size = wheelRender.offsetWidth || 260;
-      wheelRender.width  = size;
-      wheelRender.height = size;
-      const ctx = wheelRender.getContext("2d");
-      const cx  = size / 2, cy = size / 2, r = size / 2;
-      const slice = (2 * Math.PI) / SEGMENTS.length;
+    const installBtn = document.getElementById("installBtn");
+    const installModal = document.getElementById("installModal");
+    const installSteps = document.getElementById("installSteps");
+    const closeInstallModal = document.getElementById("closeInstallModal");
 
-      SEGMENTS.forEach((seg, i) => {
-        const start = i * slice - Math.PI / 2;
-        const end   = start + slice;
-
-        /* Slice fill */
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, start, end);
-        ctx.closePath();
-        ctx.fillStyle = seg.color;
-        ctx.fill();
-
-        /* Divider line */
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, start, start);
-        ctx.lineTo(cx + Math.cos(start) * r, cy + Math.sin(start) * r);
-        ctx.strokeStyle = "rgba(255,255,255,.4)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        /* Emoji label */
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(start + slice / 2);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = `${size * 0.08}px serif`;
-        ctx.fillText(seg.emoji, r * 0.62, 0);
-        ctx.restore();
-      });
-    }
-
-    /* ── Theme ─────────────────────────────── */
-    function applyTheme(m) {
-      const r = document.documentElement;
-      r.style.setProperty("--primary",   m.primary_color    || "#6F4E37");
-      r.style.setProperty("--secondary", m.secondary_color  || "#C8A27A");
-      r.style.setProperty("--bg",        m.background_color || "#F7F1EA");
-      r.style.setProperty("--surface",   m.surface_color    || "#FFFFFF");
-      r.style.setProperty("--text",      m.text_color       || "#2B211B");
-    }
-
-    /* ── Segmented progress ────────────────── */
-    function buildProgressTrack(current, required) {
-      progressTrack.innerHTML = "";
-      for (let i = 0; i < required; i++) {
-        const seg = document.createElement("div");
-        seg.className = "c-segment" +
-          (i < current ? " filled" : "") +
-          (i === current && current < required ? " current" : "");
-        progressTrack.appendChild(seg);
-      }
-    }
-
-    /* ── Stamp grid ────────────────────────── */
-    function buildStamps(current, required) {
-      stampsGrid.innerHTML = "";
-      stampsLabel.textContent = `${current} / ${required}`;
-
-      for (let i = 0; i < required; i++) {
-        const st = document.createElement("div");
-        const isReward = (i + 1) % required === 0;
-        if (i < current) {
-          st.className = isReward ? "c-stamp reward" : "c-stamp filled";
-          st.style.animationDelay = (i * 60) + "ms";
-          st.innerHTML = isReward ? "🏆" : "☕";
-        } else {
-          st.className = "c-stamp empty";
-          st.innerHTML = `<span style="color:var(--border);font-size:18px;">·</span>`;
-        }
-        const num = document.createElement("span");
-        num.className = "c-stamp-num";
-        num.textContent = i + 1;
-        st.appendChild(num);
-        stampsGrid.appendChild(st);
-      }
-    }
-
-    /* ── Progress update ───────────────────── */
-    function updateProgress(loyalty) {
-      const required = Number(loyalty.cups_required || 10);
-      const current  = Number(loyalty.current_cups  || 0);
-      const total    = Number(loyalty.total_cups    || 0);
-      const remaining = Math.max(required - current, 0);
-
-      /* Animate number counting */
-      animateNumber(currentCups, current);
-      animateNumber(totalCups,   total);
-      cupsRequired.textContent = required;
-
-      buildProgressTrack(current, required);
-      buildStamps(current, required);
-
-      if (current === 0) {
-        progressText.textContent = `ابدأ التجميع — تحتاج ${required} أكواب لمكافأة مجانية`;
-      } else if (remaining === 0) {
-        progressText.textContent = "🎉 مبروك، وصلت للحد المطلوب!";
-        progressText.style.color = "rgba(255,255,255,.95)";
-        progressText.style.fontWeight = "900";
-      } else {
-        progressText.textContent = `باقي ${remaining} كوب فقط للمكافأة`;
-      }
-
-      /* Next reward hint */
-      if (remaining > 0 && remaining <= 3) {
-        nextRewardHint.style.display = "flex";
-        nextRewardText.textContent = `${remaining} ${remaining === 1 ? "كوب" : "أكواب"} وتحصل على مكافأة مجانية!`;
-      } else {
-        nextRewardHint.style.display = "none";
-      }
-    }
-
-    /* ── Animated number counter ───────────── */
-    function animateNumber(el, target) {
-      const start    = parseInt(el.textContent) || 0;
-      const duration = 800;
-      const step     = 16;
-      let   elapsed  = 0;
-      const tick = () => {
-        elapsed += step;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(start + (target - start) * ease);
-        if (progress < 1) setTimeout(tick, step);
-      };
-      tick();
-    }
-
-    /* ── Roulette ──────────────────────────── */
-    function renderRoulette(loyalty) {
-      pendingTransactionId = loyalty.pending_transaction_id || null;
-
-      if (!loyalty.roulette_enabled) {
-        spinBtn.disabled = true;
-        rouletteBadge.textContent = "غير مفعلة";
-        rouletteBadge.style.background = "rgba(124,111,102,.3)";
-        rouletteText.textContent = "الروليت غير مفعلة حاليًا من الكافيه.";
-        return;
-      }
-
-      if (!loyalty.can_spin || !pendingTransactionId) {
-        spinBtn.disabled = true;
-        rouletteBadge.textContent = "في الانتظار";
-        rouletteBadge.style.background = "rgba(124,111,102,.3)";
-        rouletteText.textContent = "لا توجد عملية شراء جديدة مؤهلة للروليت حاليًا.";
-        return;
-      }
-
-      spinBtn.disabled = false;
-      rouletteBadge.textContent = "متاحة الآن!";
-      rouletteText.textContent = "لديك دورة مجانية! اضغط الزر وشاهد مكافأتك.";
-    }
-
-    /* ── Wallet ────────────────────────────── */
-    function renderWallet(items) {
-      walletList.innerHTML = "";
-      if (!items || items.length === 0) {
-        walletList.innerHTML = '<div class="empty-state">لا توجد مكافآت متاحة حاليًا</div>';
-        return;
-      }
-      items.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.className = "c-reward-item";
-        div.style.animationDelay = (idx * 80) + "ms";
-        div.innerHTML = `
-          <div class="c-reward-icon">🎁</div>
-          <div style="flex:1;min-width:0;">
-            <div class="c-reward-name">${item.reward_title || "مكافأة"}</div>
-            <div class="c-reward-exp">${item.expires_at ? "تنتهي: " + formatDate(item.expires_at) : "بدون تاريخ انتهاء"}</div>
-          </div>
-          <span class="pill success">✓ متاحة</span>
-        `;
-        walletList.appendChild(div);
-      });
-    }
-
-    /* ── Transactions ──────────────────────── */
-    function renderTransactions(items) {
-      txList.innerHTML = "";
-      if (!items || items.length === 0) {
-        txList.innerHTML = '<div class="empty-state">لا توجد زيارات مسجلة بعد</div>';
-        return;
-      }
-      items.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.className = "c-tx-item";
-        div.style.animationDelay = (idx * 70) + "ms";
-        const isPurchase = item.source === "cashier";
-        div.innerHTML = `
-          <div class="c-tx-icon">${isPurchase ? "☕" : "🎁"}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="c-tx-name">${isPurchase ? "عملية شراء" : "مكافأة"}</div>
-            <div class="c-tx-date">${formatDate(item.transaction_at)}</div>
-          </div>
-          <span class="c-tx-cups">+${item.cups_count} ☕</span>
-        `;
-        txList.appendChild(div);
-      });
-    }
-
-    /* ── Helpers ───────────────────────────── */
-    function formatDate(v) {
-      if (!v) return "-";
-      try {
-        return new Intl.DateTimeFormat("ar-SA", {
-          dateStyle: "medium",
-          timeStyle: "short"
-        }).format(new Date(v));
-      } catch { return v; }
+    function showError(text) {
+      loadingCard.style.display = "none";
+      appContent.style.display = "none";
+      errorCard.style.display = "block";
+      errorText.textContent = text || "تعذر فتح صفحة العميل.";
     }
 
     function showMsg(el, text, type = "error") {
@@ -1189,17 +459,127 @@
       el.textContent = "";
     }
 
-    /* ── Render page ───────────────────────── */
+    function formatDate(dateValue) {
+      if (!dateValue) return "-";
+
+      try {
+        return new Intl.DateTimeFormat("ar-SA", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(new Date(dateValue));
+      } catch (e) {
+        return dateValue;
+      }
+    }
+
+    function applyTheme(merchant) {
+      document.documentElement.style.setProperty("--primary", merchant.primary_color || "#6F4E37");
+      document.documentElement.style.setProperty("--secondary", merchant.secondary_color || "#C8A27A");
+      document.documentElement.style.setProperty("--bg", merchant.background_color || "#F7F1EA");
+      document.documentElement.style.setProperty("--surface", merchant.surface_color || "#FFFFFF");
+      document.documentElement.style.setProperty("--text", merchant.text_color || "#2B211B");
+    }
+
+    function updateProgress(loyalty) {
+      const required = Number(loyalty.cups_required || 10);
+      const current = Number(loyalty.current_cups || 0);
+      const total = Number(loyalty.total_cups || 0);
+      const percent = Math.min(100, Math.round((current / required) * 100));
+
+      currentCups.textContent = current;
+      cupsRequired.textContent = required;
+      totalCups.textContent = total;
+      progressBar.style.width = percent + "%";
+
+      if (current === 0) {
+        progressText.textContent = "ابدأ التجميع من جديد. تحتاج " + required + " أكواب للحصول على كوب مجاني.";
+      } else {
+        const remaining = Math.max(required - current, 0);
+        progressText.textContent = remaining === 0
+          ? "مبروك، وصلت للحد المطلوب."
+          : "باقي لك " + remaining + " كوب للحصول على كوب مجاني.";
+      }
+    }
+
+    function renderWallet(items) {
+      walletList.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        walletList.innerHTML = '<div class="empty-state">لا توجد مكافآت متاحة حاليًا.</div>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "wallet-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${item.reward_title || "مكافأة"}</strong>
+            <span class="muted">${item.expires_at ? "تنتهي: " + formatDate(item.expires_at) : "بدون تاريخ انتهاء"}</span>
+          </div>
+          <span class="pill success">متاحة</span>
+        `;
+
+        walletList.appendChild(div);
+      });
+    }
+
+    function renderTransactions(items) {
+      txList.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        txList.innerHTML = '<div class="empty-state">لا توجد زيارات مسجلة بعد.</div>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "tx-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${item.cups_count} كوب</strong>
+            <span class="muted">${formatDate(item.transaction_at)}</span>
+          </div>
+          <span class="pill">${item.source === "cashier" ? "شراء" : "مكافأة"}</span>
+        `;
+
+        txList.appendChild(div);
+      });
+    }
+
+    function renderRoulette(loyalty) {
+      pendingTransactionId = loyalty.pending_transaction_id || null;
+
+      if (!loyalty.roulette_enabled) {
+        spinBtn.disabled = true;
+        rouletteText.textContent = "الروليت غير مفعلة حاليًا من الكافيه.";
+        return;
+      }
+
+      if (!loyalty.can_spin || !pendingTransactionId) {
+        spinBtn.disabled = true;
+        rouletteText.textContent = "لا توجد عملية شراء جديدة مؤهلة للروليت حاليًا.";
+        return;
+      }
+
+      spinBtn.disabled = false;
+      rouletteText.textContent = "لديك عملية شراء مؤهلة. اضغط الزر وشاهد مكافأتك.";
+    }
+
     function renderPage(data) {
       pageData = data;
 
       applyTheme(data.merchant);
 
       merchantName.textContent = data.merchant.name || "كافيه";
-      customerName.textContent = data.customer.name  || "عميلنا";
+      customerName.textContent = data.customer.name || "عميلنا العزيز";
 
       if (data.merchant.logo_url) {
         merchantLogo.innerHTML = `<img src="${data.merchant.logo_url}" alt="شعار الكافيه">`;
+      } else {
+        merchantLogo.textContent = "☕";
       }
 
       updateProgress(data.loyalty);
@@ -1207,31 +587,20 @@
       renderWallet(data.wallet);
       renderTransactions(data.last_transactions);
 
-      // Draw wheel after theme applied
-      requestAnimationFrame(() => {
-        drawWheel();
-      });
-
-      // Hide loading
-      loadingOverlay.classList.add("hidden");
-      appContent.style.display = "contents";
+      loadingCard.style.display = "none";
+      errorCard.style.display = "none";
+      appContent.style.display = "block";
     }
 
-    /* ── Show error ────────────────────────── */
-    function showError(text) {
-      loadingOverlay.classList.add("hidden");
-      errorText.textContent = text || "تعذر فتح صفحة العميل.";
-      errorState.classList.add("show");
-    }
-
-    /* ── Load page ─────────────────────────── */
     async function loadPage() {
       if (!token) {
-        showError("رابط العميل لا يحتوي على token صالح.");
+        showError("رابط العميل لا يحتوي على token.");
         return;
       }
 
-      const { data, error } = await client.rpc("customer_get_page", { p_token: token });
+      const { data, error } = await client.rpc("customer_get_page", {
+        p_token: token
+      });
 
       if (error) {
         showError(error.message || "تعذر تحميل بيانات العميل.");
@@ -1239,24 +608,14 @@
       }
 
       if (!data || data.ok === false) {
-        showError(data?.message || "الرابط غير صالح أو منتهي الصلاحية.");
+        showError(data?.message || "الرابط غير صالح أو منتهي.");
         return;
       }
 
       renderPage(data);
     }
 
-    /* ── Spin ──────────────────────────────── */
-    spinBtn.addEventListener("click", async (e) => {
-      /* Ripple effect */
-      const circle = document.createElement("div");
-      circle.className = "ripple-circle";
-      const rect = spinBtn.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      circle.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px;`;
-      spinBtn.appendChild(circle);
-      setTimeout(() => circle.remove(), 700);
-
+    spinBtn.addEventListener("click", async () => {
       hideMsg(spinMsg);
       spinResult.classList.remove("show");
 
@@ -1266,8 +625,7 @@
       }
 
       spinBtn.disabled = true;
-      spinBtn.textContent = "⏳ جاري التدوير...";
-      wheelWrap.classList.add("spinning");
+      spinBtn.textContent = "جاري تدوير الروليت...";
 
       const { data, error } = await client.rpc("customer_spin_roulette", {
         p_token: token,
@@ -1276,8 +634,7 @@
 
       if (error) {
         spinBtn.disabled = false;
-        spinBtn.textContent = "🎰 العب الآن";
-        wheelWrap.classList.remove("spinning");
+        spinBtn.textContent = "العب الآن";
         showMsg(spinMsg, error.message || "تعذر تشغيل الروليت.");
         return;
       }
@@ -1285,123 +642,84 @@
       if (!data || data.ok === false) {
         spinBtn.disabled = true;
         spinBtn.textContent = "تم استخدام الروليت";
-        wheelWrap.classList.remove("spinning");
         showMsg(spinMsg, data?.message || "تعذر تشغيل الروليت.");
         return;
       }
 
-      /* Spin animation */
-      const extraRotation = 1800 + Math.floor(Math.random() * 360);
+      const extraRotation = 1440 + Math.floor(Math.random() * 360);
       currentRotation += extraRotation;
-      wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+      wheel.style.transform = "rotate(" + currentRotation + "deg)";
 
       setTimeout(() => {
-        wheelWrap.classList.remove("spinning");
         const reward = data.reward || {};
-        const isWin  = reward.reward_type !== "no_prize";
+        spinResult.classList.add("show");
 
-        spinResult.className = "c-spin-result show " + (isWin ? "win" : "lose");
-        spinResult.textContent = isWin
-          ? "🎉 مبروك! ربحت: " + (reward.title || "مكافأة")
-          : "😅 " + (reward.title || "حظ أوفر") + " — جرب مرة أخرى!";
+        if (reward.reward_type === "no_prize") {
+          spinResult.style.color = "var(--muted)";
+          spinResult.style.background = "rgba(111, 78, 55, 0.06)";
+          spinResult.style.borderColor = "var(--border)";
+          spinResult.textContent = "كانت النتيجة: " + (reward.title || "حظ أوفر");
+        } else {
+          spinResult.style.color = "var(--success)";
+          spinResult.style.background = "rgba(47, 133, 90, 0.08)";
+          spinResult.style.borderColor = "rgba(47, 133, 90, 0.18)";
+          spinResult.textContent = "مبروك! ربحت: " + (reward.title || "مكافأة");
+        }
 
-        if (isWin) launchConfetti();
-
-        if (data.loyalty) updateProgress(data.loyalty);
+        if (data.loyalty) {
+          updateProgress(data.loyalty);
+        }
 
         pendingTransactionId = null;
         spinBtn.disabled = true;
-        spinBtn.textContent = "✓ تم استخدام الروليت";
+        spinBtn.textContent = "تم استخدام الروليت";
 
-        setTimeout(loadPage, 1200);
-      }, 4400);
+        setTimeout(loadPage, 900);
+      }, 4100);
     });
 
-    /* ── Confetti ──────────────────────────── */
-    function launchConfetti() {
-      const canvas = $("confettiCanvas");
-      const ctx    = canvas.getContext("2d");
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const colors = ["#6F4E37","#C8A27A","#F7F1EA","#2F855A","#805AD5","#F6C90E"];
-      const pieces = Array.from({ length: 90 }, () => ({
-        x:    Math.random() * canvas.width,
-        y:    Math.random() * canvas.height - canvas.height,
-        w:    6 + Math.random() * 8,
-        h:    4 + Math.random() * 5,
-        vy:   3 + Math.random() * 4,
-        vx:   (Math.random() - .5) * 3,
-        rot:  Math.random() * 360,
-        rv:   (Math.random() - .5) * 8,
-        color: colors[Math.floor(Math.random() * colors.length)],
-      }));
-
-      let frame;
-      const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pieces.forEach(p => {
-          p.y  += p.vy;
-          p.x  += p.vx;
-          p.rot += p.rv;
-          ctx.save();
-          ctx.translate(p.x + p.w/2, p.y + p.h/2);
-          ctx.rotate(p.rot * Math.PI / 180);
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = Math.max(0, 1 - p.y / canvas.height);
-          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-          ctx.restore();
-        });
-        if (pieces.some(p => p.y < canvas.height)) {
-          frame = requestAnimationFrame(animate);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      };
-      frame = requestAnimationFrame(animate);
-      setTimeout(() => {
-        cancelAnimationFrame(frame);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }, 4000);
-    }
-
-    /* ── Install ───────────────────────────── */
     installBtn.addEventListener("click", () => {
-      const isIOS     = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
       const isAndroid = /android/i.test(navigator.userAgent);
 
       if (isIOS) {
-        installSteps.innerHTML = `<ol>
-          <li>اضغط أيقونة المشاركة <strong>في أسفل المتصفح</strong></li>
-          <li>اختر: <strong>إضافة إلى الشاشة الرئيسية</strong></li>
-          <li>اضغط <strong>إضافة</strong></li>
-        </ol>`;
+        installSteps.innerHTML = `
+          <ol>
+            <li>اضغط زر المشاركة في أسفل المتصفح.</li>
+            <li>اختر: إضافة إلى الشاشة الرئيسية.</li>
+            <li>اضغط إضافة.</li>
+          </ol>
+        `;
       } else if (isAndroid) {
-        installSteps.innerHTML = `<ol>
-          <li>اضغط قائمة المتصفح <strong>⋮</strong></li>
-          <li>اختر: <strong>إضافة إلى الشاشة الرئيسية</strong></li>
-          <li>اضغط <strong>تثبيت</strong> أو <strong>إضافة</strong></li>
-        </ol>`;
+        installSteps.innerHTML = `
+          <ol>
+            <li>اضغط قائمة المتصفح ⋮.</li>
+            <li>اختر: إضافة إلى الشاشة الرئيسية.</li>
+            <li>اضغط تثبيت أو إضافة.</li>
+          </ol>
+        `;
       } else {
-        installSteps.innerHTML = `<ol>
-          <li>افتح الصفحة من جوالك</li>
-          <li>استخدم خيار <strong>إضافة للشاشة الرئيسية</strong> من المتصفح</li>
-        </ol>`;
+        installSteps.innerHTML = `
+          <ol>
+            <li>افتح الصفحة من الجوال.</li>
+            <li>استخدم خيار إضافة الصفحة للشاشة الرئيسية من المتصفح.</li>
+          </ol>
+        `;
       }
+
       installModal.classList.add("show");
     });
 
-    closeInstall.addEventListener("click", () => installModal.classList.remove("show"));
-    installModal.addEventListener("click", e => {
-      if (e.target === installModal) installModal.classList.remove("show");
+    closeInstallModal.addEventListener("click", () => {
+      installModal.classList.remove("show");
     });
 
-    /* ── Wheel resize ──────────────────────── */
-    window.addEventListener("resize", () => {
-      if (pageData) drawWheel();
+    installModal.addEventListener("click", (e) => {
+      if (e.target === installModal) {
+        installModal.classList.remove("show");
+      }
     });
 
-    /* ── Boot ──────────────────────────────── */
     loadPage();
   </script>
 </body>
