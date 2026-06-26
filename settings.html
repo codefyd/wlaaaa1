@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>إعدادات التاجر | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+
+  <style>
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .side-menu {
+      position: sticky;
+      top: 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .side-menu a {
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.7);
+      font-weight: 800;
+    }
+
+    .settings-content {
+      display: grid;
+      gap: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .color-row {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      height: 52px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 4px;
+    }
+
+    .reward-card {
+      border: 1px solid var(--border);
+      background: rgba(111, 78, 55, 0.04);
+      border-radius: 22px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .reward-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .reward-title {
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .probability-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.07);
+      border: 1px solid var(--border);
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .probability-box.good {
+      color: var(--success);
+      background: rgba(47, 133, 90, 0.08);
+      border-color: rgba(47, 133, 90, 0.18);
+    }
+
+    .probability-box.bad {
+      color: var(--danger);
+      background: rgba(180, 35, 24, 0.08);
+      border-color: rgba(180, 35, 24, 0.18);
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    @media (max-width: 900px) {
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-menu {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <h1>إعدادات التاجر</h1>
+        <p id="merchantInfo" class="subtitle" style="margin-bottom:0;">
+          جاري تحميل بيانات الكافيه...
+        </p>
+      </div>
+
+      <nav class="nav">
+        <a href="cashier.html">الكاشير</a>
+        <a href="settings.html">الإعدادات</a>
+        <a href="#" id="logoutLink">تسجيل الخروج</a>
+      </nav>
+    </header>
+
+    <section class="settings-layout">
+      <aside class="card side-menu">
+        <a href="#brand">هوية الكافيه</a>
+        <a href="#loyalty">إعدادات الولاء</a>
+        <a href="#roulette">الروليت</a>
+        <a href="#addReward">إضافة جائزة</a>
+      </aside>
+
+      <div class="settings-content">
+        <!-- هوية الكافيه -->
+        <section id="brand" class="card">
+          <div class="section-head">
+            <div>
+              <h2>هوية الكافيه</h2>
+              <p class="muted">هذه الإعدادات تظهر في صفحة العميل ولوحة الكاشير.</p>
+            </div>
+            <span class="pill">Brand</span>
+          </div>
+
+          <form id="brandForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="merchantName">اسم الكافيه</label>
+                <input id="merchantName" type="text" placeholder="مثال: كافيه تجريبي" required />
+              </div>
+
+              <div class="form-group">
+                <label for="merchantSlug">الرابط المختصر</label>
+                <input id="merchantSlug" type="text" placeholder="demo-cafe" required />
+              </div>
+
+              <div class="form-group">
+                <label for="logoUrl">رابط الشعار</label>
+                <input id="logoUrl" type="url" placeholder="https://example.com/logo.png" />
+              </div>
+
+              <div class="form-group">
+                <label for="appIconUrl">رابط أيقونة التطبيق</label>
+                <input id="appIconUrl" type="url" placeholder="https://example.com/icon.png" />
+              </div>
+
+              <div class="form-group">
+                <label for="uiStyle">نمط الواجهة</label>
+                <select id="uiStyle">
+                  <option value="classic">كلاسيكي</option>
+                  <option value="luxury">فاخر</option>
+                  <option value="modern">حديث</option>
+                  <option value="youth">شبابي</option>
+                </select>
+              </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid var(--border);margin:18px 0;">
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>اللون الأساسي</label>
+                <div class="color-row">
+                  <input id="primaryColor" type="color" />
+                  <input id="primaryColorText" type="text" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>اللون الثانوي</label>
+                <div class="color-row">
+                  <input id="secondaryColor" type="color" />
+                  <input id="secondaryColorText" type="text" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>لون الخلفية</label>
+                <div class="color-row">
+                  <input id="backgroundColor" type="color" />
+                  <input id="backgroundColorText" type="text" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>لون الكروت</label>
+                <div class="color-row">
+                  <input id="surfaceColor" type="color" />
+                  <input id="surfaceColorText" type="text" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>لون النص</label>
+                <div class="color-row">
+                  <input id="textColor" type="color" />
+                  <input id="textColorText" type="text" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>لون الأزرار</label>
+                <div class="color-row">
+                  <input id="buttonColor" type="color" />
+                  <input id="buttonColorText" type="text" />
+                </div>
+              </div>
+            </div>
+
+            <button id="saveBrandBtn" type="submit" class="full">حفظ هوية الكافيه</button>
+            <div id="brandMsg" class="alert"></div>
+          </form>
+        </section>
+
+        <!-- إعدادات الولاء -->
+        <section id="loyalty" class="card">
+          <div class="section-head">
+            <div>
+              <h2>إعدادات الولاء</h2>
+              <p class="muted">حدد عدد الأكواب المطلوبة للحصول على كوب مجاني وحدود العمليات.</p>
+            </div>
+            <span class="pill">Loyalty</span>
+          </div>
+
+          <form id="loyaltyForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="cupsRequired">عدد الأكواب للكوب المجاني</label>
+                <input id="cupsRequired" type="number" min="1" required />
+              </div>
+
+              <div class="form-group">
+                <label for="rewardExpiryDays">مدة صلاحية المكافأة بالأيام</label>
+                <input id="rewardExpiryDays" type="number" min="1" required />
+              </div>
+
+              <div class="form-group">
+                <label for="maxCupsPerOrder">الحد الأعلى للأكواب في العملية</label>
+                <input id="maxCupsPerOrder" type="number" min="1" required />
+              </div>
+
+              <div class="form-group">
+                <label for="rouletteEnabled">تفعيل الروليت</label>
+                <select id="rouletteEnabled">
+                  <option value="true">مفعل</option>
+                  <option value="false">متوقف</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="allowManualAdjustment">السماح بالتعديل اليدوي</label>
+                <select id="allowManualAdjustment">
+                  <option value="true">نعم</option>
+                  <option value="false">لا</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="roulettePerTransaction">روليت لكل عملية</label>
+                <select id="roulettePerTransaction">
+                  <option value="true">نعم</option>
+                  <option value="false">لا</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="saveLoyaltyBtn" type="submit" class="full">حفظ إعدادات الولاء</button>
+            <div id="loyaltyMsg" class="alert"></div>
+          </form>
+        </section>
+
+        <!-- الروليت -->
+        <section id="roulette" class="card">
+          <div class="section-head">
+            <div>
+              <h2>خانات الروليت</h2>
+              <p class="muted">عدّل الجوائز والنسب والحدود. الأفضل أن يكون مجموع النسب 100%.</p>
+            </div>
+            <span class="pill">Rewards</span>
+          </div>
+
+          <div id="probabilityBox" class="probability-box">
+            مجموع النسب: -
+          </div>
+
+          <div id="rewardsList"></div>
+        </section>
+
+        <!-- إضافة جائزة -->
+        <section id="addReward" class="card">
+          <div class="section-head">
+            <div>
+              <h2>إضافة جائزة جديدة</h2>
+              <p class="muted">أضف خانة جديدة للروليت.</p>
+            </div>
+            <span class="pill success">New</span>
+          </div>
+
+          <form id="addRewardForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="newTitle">اسم الجائزة</label>
+                <input id="newTitle" type="text" placeholder="مثال: خصم 15%" required />
+              </div>
+
+              <div class="form-group">
+                <label for="newType">نوع الجائزة</label>
+                <select id="newType">
+                  <option value="no_prize">حظ أوفر</option>
+                  <option value="free_cup">كوب مجاني</option>
+                  <option value="discount_percent">خصم نسبة</option>
+                  <option value="free_addon">إضافة مجانية</option>
+                  <option value="size_upgrade">ترقية الحجم</option>
+                  <option value="extra_cups">أكواب إضافية في الرصيد</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="newValue">قيمة الجائزة</label>
+                <input id="newValue" type="number" step="0.01" placeholder="مثال: 10" />
+              </div>
+
+              <div class="form-group">
+                <label for="newProbability">النسبة</label>
+                <input id="newProbability" type="number" step="0.01" min="0" value="0" required />
+              </div>
+
+              <div class="form-group">
+                <label for="newColor">لون الخانة</label>
+                <input id="newColor" type="color" value="#6F4E37" />
+              </div>
+
+              <div class="form-group">
+                <label for="newSortOrder">الترتيب</label>
+                <input id="newSortOrder" type="number" value="10" />
+              </div>
+
+              <div class="form-group">
+                <label for="newDailyLimit">الحد اليومي</label>
+                <input id="newDailyLimit" type="number" min="0" placeholder="اتركه فارغًا لغير محدود" />
+              </div>
+
+              <div class="form-group">
+                <label for="newMonthlyLimit">الحد الشهري</label>
+                <input id="newMonthlyLimit" type="number" min="0" placeholder="اتركه فارغًا لغير محدود" />
+              </div>
+
+              <div class="form-group">
+                <label for="newApproval">تحتاج اعتماد الموظف</label>
+                <select id="newApproval">
+                  <option value="false">لا</option>
+                  <option value="true">نعم</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="addRewardBtn" type="submit" class="full">إضافة الجائزة</button>
+            <div id="addRewardMsg" class="alert"></div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.APP_CONFIG.SUPABASE_URL,
+      window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
+    );
+
+    let merchantContext = null;
+    let rewards = [];
+
+    const logoutLink = document.getElementById("logoutLink");
+    const merchantInfo = document.getElementById("merchantInfo");
+
+    const brandForm = document.getElementById("brandForm");
+    const loyaltyForm = document.getElementById("loyaltyForm");
+    const addRewardForm = document.getElementById("addRewardForm");
+
+    const brandMsg = document.getElementById("brandMsg");
+    const loyaltyMsg = document.getElementById("loyaltyMsg");
+    const addRewardMsg = document.getElementById("addRewardMsg");
+
+    const rewardsList = document.getElementById("rewardsList");
+    const probabilityBox = document.getElementById("probabilityBox");
+
+    function showMsg(el, text, type = "error") {
+      el.className = "alert show " + type;
+      el.textContent = text;
+    }
+
+    function hideMsg(el) {
+      el.className = "alert";
+      el.textContent = "";
+    }
+
+    function toBool(value) {
+      return value === true || value === "true";
+    }
+
+    function emptyToNull(value) {
+      if (value === undefined || value === null) return null;
+      const v = String(value).trim();
+      return v === "" ? null : v;
+    }
+
+    function numberOrNull(value) {
+      const v = emptyToNull(value);
+      if (v === null) return null;
+      return Number(v);
+    }
+
+    function bindColor(colorId, textId, cssVar) {
+      const color = document.getElementById(colorId);
+      const text = document.getElementById(textId);
+
+      color.addEventListener("input", () => {
+        text.value = color.value;
+        if (cssVar) document.documentElement.style.setProperty(cssVar, color.value);
+      });
+
+      text.addEventListener("input", () => {
+        if (/^#[0-9A-Fa-f]{6}$/.test(text.value)) {
+          color.value = text.value;
+          if (cssVar) document.documentElement.style.setProperty(cssVar, text.value);
+        }
+      });
+    }
+
+    bindColor("primaryColor", "primaryColorText", "--primary");
+    bindColor("secondaryColor", "secondaryColorText", "--secondary");
+    bindColor("backgroundColor", "backgroundColorText", "--bg");
+    bindColor("surfaceColor", "surfaceColorText", "--surface");
+    bindColor("textColor", "textColorText", "--text");
+    bindColor("buttonColor", "buttonColorText", "--primary");
+
+    function setColorInputs(colorId, textId, value, fallback) {
+      const v = value || fallback;
+      document.getElementById(colorId).value = v;
+      document.getElementById(textId).value = v;
+    }
+
+    function applyTheme(m) {
+      document.documentElement.style.setProperty("--primary", m.primary_color || "#6F4E37");
+      document.documentElement.style.setProperty("--secondary", m.secondary_color || "#C8A27A");
+      document.documentElement.style.setProperty("--bg", m.background_color || "#F7F1EA");
+      document.documentElement.style.setProperty("--surface", m.surface_color || "#FFFFFF");
+      document.documentElement.style.setProperty("--text", m.text_color || "#2B211B");
+    }
+
+    async function requireSession() {
+      const { data } = await client.auth.getSession();
+
+      if (!data.session) {
+        window.location.href = "login.html";
+        return false;
+      }
+
+      return true;
+    }
+
+    async function loadContext() {
+      const ok = await requireSession();
+      if (!ok) return false;
+
+      const { data, error } = await client.rpc("get_my_merchant_context");
+
+      if (error || !data || data.length === 0) {
+        merchantInfo.textContent = "لا يوجد كافيه مرتبط بهذا المستخدم.";
+        return false;
+      }
+
+      merchantContext = data[0];
+      merchantInfo.textContent = merchantContext.merchant_name + " — " + merchantContext.role;
+      applyTheme(merchantContext);
+
+      return true;
+    }
+
+    async function loadMerchant() {
+      const { data, error } = await client
+        .from("merchants")
+        .select("*")
+        .eq("id", merchantContext.merchant_id)
+        .single();
+
+      if (error) {
+        showMsg(brandMsg, "تعذر تحميل بيانات الهوية: " + error.message);
+        return;
+      }
+
+      document.getElementById("merchantName").value = data.name || "";
+      document.getElementById("merchantSlug").value = data.slug || "";
+      document.getElementById("logoUrl").value = data.logo_url || "";
+      document.getElementById("appIconUrl").value = data.app_icon_url || "";
+      document.getElementById("uiStyle").value = data.ui_style || "classic";
+
+      setColorInputs("primaryColor", "primaryColorText", data.primary_color, "#6F4E37");
+      setColorInputs("secondaryColor", "secondaryColorText", data.secondary_color, "#C8A27A");
+      setColorInputs("backgroundColor", "backgroundColorText", data.background_color, "#F7F1EA");
+      setColorInputs("surfaceColor", "surfaceColorText", data.surface_color, "#FFFFFF");
+      setColorInputs("textColor", "textColorText", data.text_color, "#2B211B");
+      setColorInputs("buttonColor", "buttonColorText", data.button_color, "#6F4E37");
+
+      applyTheme(data);
+    }
+
+    async function loadLoyalty() {
+      const { data, error } = await client
+        .from("loyalty_settings")
+        .select("*")
+        .eq("merchant_id", merchantContext.merchant_id)
+        .single();
+
+      if (error) {
+        showMsg(loyaltyMsg, "تعذر تحميل إعدادات الولاء: " + error.message);
+        return;
+      }
+
+      document.getElementById("cupsRequired").value = data.cups_required || 10;
+      document.getElementById("rewardExpiryDays").value = data.reward_expiry_days || 30;
+      document.getElementById("maxCupsPerOrder").value = data.max_cups_per_order || 20;
+      document.getElementById("rouletteEnabled").value = String(data.roulette_enabled);
+      document.getElementById("allowManualAdjustment").value = String(data.allow_manual_adjustment);
+      document.getElementById("roulettePerTransaction").value = String(data.roulette_per_transaction);
+    }
+
+    function rewardTypeLabel(type) {
+      const map = {
+        no_prize: "حظ أوفر",
+        free_cup: "كوب مجاني",
+        discount_percent: "خصم نسبة",
+        free_addon: "إضافة مجانية",
+        size_upgrade: "ترقية الحجم",
+        extra_cups: "أكواب إضافية"
+      };
+
+      return map[type] || type;
+    }
+
+    function renderProbability() {
+      const total = rewards.reduce((sum, r) => sum + Number(r.probability || 0), 0);
+      probabilityBox.textContent = "مجموع النسب: " + total + "%";
+
+      if (Math.round(total * 100) / 100 === 100) {
+        probabilityBox.className = "probability-box good";
+        probabilityBox.textContent += " — ممتاز";
+      } else {
+        probabilityBox.className = "probability-box bad";
+        probabilityBox.textContent += " — الأفضل أن يكون 100%";
+      }
+    }
+
+    function renderRewards() {
+      rewardsList.innerHTML = "";
+
+      if (!rewards || rewards.length === 0) {
+        rewardsList.innerHTML = '<div class="empty-state">لا توجد خانات روليت بعد.</div>';
+        renderProbability();
+        return;
+      }
+
+      rewards.forEach((reward) => {
+        const div = document.createElement("div");
+        div.className = "reward-card";
+        div.dataset.id = reward.id;
+
+        div.innerHTML = `
+          <div class="reward-top">
+            <div>
+              <div class="reward-title">${reward.title}</div>
+              <div class="muted">${rewardTypeLabel(reward.reward_type)}</div>
+            </div>
+            <span class="pill ${reward.is_active ? "success" : "danger"}">
+              ${reward.is_active ? "مفعلة" : "متوقفة"}
+            </span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>اسم الجائزة</label>
+              <input data-field="title" type="text" value="${reward.title || ""}">
+            </div>
+
+            <div class="form-group">
+              <label>نوع الجائزة</label>
+              <select data-field="reward_type">
+                <option value="no_prize" ${reward.reward_type === "no_prize" ? "selected" : ""}>حظ أوفر</option>
+                <option value="free_cup" ${reward.reward_type === "free_cup" ? "selected" : ""}>كوب مجاني</option>
+                <option value="discount_percent" ${reward.reward_type === "discount_percent" ? "selected" : ""}>خصم نسبة</option>
+                <option value="free_addon" ${reward.reward_type === "free_addon" ? "selected" : ""}>إضافة مجانية</option>
+                <option value="size_upgrade" ${reward.reward_type === "size_upgrade" ? "selected" : ""}>ترقية الحجم</option>
+                <option value="extra_cups" ${reward.reward_type === "extra_cups" ? "selected" : ""}>أكواب إضافية</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>قيمة الجائزة</label>
+              <input data-field="reward_value" type="number" step="0.01" value="${reward.reward_value ?? ""}">
+            </div>
+
+            <div class="form-group">
+              <label>النسبة</label>
+              <input data-field="probability" type="number" step="0.01" min="0" value="${reward.probability ?? 0}">
+            </div>
+
+            <div class="form-group">
+              <label>لون الخانة</label>
+              <input data-field="color" type="color" value="${reward.color || "#6F4E37"}">
+            </div>
+
+            <div class="form-group">
+              <label>الترتيب</label>
+              <input data-field="sort_order" type="number" value="${reward.sort_order ?? 0}">
+            </div>
+
+            <div class="form-group">
+              <label>الحد اليومي</label>
+              <input data-field="daily_limit" type="number" min="0" value="${reward.daily_limit ?? ""}">
+            </div>
+
+            <div class="form-group">
+              <label>الحد الشهري</label>
+              <input data-field="monthly_limit" type="number" min="0" value="${reward.monthly_limit ?? ""}">
+            </div>
+
+            <div class="form-group">
+              <label>تحتاج اعتماد الموظف</label>
+              <select data-field="requires_employee_approval">
+                <option value="false" ${!reward.requires_employee_approval ? "selected" : ""}>لا</option>
+                <option value="true" ${reward.requires_employee_approval ? "selected" : ""}>نعم</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>الحالة</label>
+              <select data-field="is_active">
+                <option value="true" ${reward.is_active ? "selected" : ""}>مفعلة</option>
+                <option value="false" ${!reward.is_active ? "selected" : ""}>متوقفة</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inline-actions">
+            <button type="button" data-action="save">حفظ الجائزة</button>
+            <button type="button" class="secondary" data-action="toggle">
+              ${reward.is_active ? "إيقاف" : "تفعيل"}
+            </button>
+            <button type="button" class="ghost" data-action="delete">حذف</button>
+          </div>
+
+          <div class="alert" data-message></div>
+        `;
+
+        rewardsList.appendChild(div);
+      });
+
+      renderProbability();
+    }
+
+    async function loadRewards() {
+      const { data, error } = await client
+        .from("roulette_rewards")
+        .select("*")
+        .eq("merchant_id", merchantContext.merchant_id)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        rewardsList.innerHTML = '<div class="alert show error">تعذر تحميل الجوائز: ' + error.message + '</div>';
+        return;
+      }
+
+      rewards = data || [];
+      renderRewards();
+    }
+
+    brandForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMsg(brandMsg);
+
+      const payload = {
+        name: document.getElementById("merchantName").value.trim(),
+        slug: document.getElementById("merchantSlug").value.trim(),
+        logo_url: emptyToNull(document.getElementById("logoUrl").value),
+        app_icon_url: emptyToNull(document.getElementById("appIconUrl").value),
+        ui_style: document.getElementById("uiStyle").value,
+        primary_color: document.getElementById("primaryColorText").value.trim(),
+        secondary_color: document.getElementById("secondaryColorText").value.trim(),
+        background_color: document.getElementById("backgroundColorText").value.trim(),
+        surface_color: document.getElementById("surfaceColorText").value.trim(),
+        text_color: document.getElementById("textColorText").value.trim(),
+        button_color: document.getElementById("buttonColorText").value.trim()
+      };
+
+      const { error } = await client
+        .from("merchants")
+        .update(payload)
+        .eq("id", merchantContext.merchant_id);
+
+      if (error) {
+        showMsg(brandMsg, "تعذر حفظ الهوية: " + error.message);
+        return;
+      }
+
+      applyTheme(payload);
+      showMsg(brandMsg, "تم حفظ هوية الكافيه بنجاح.", "success");
+    });
+
+    loyaltyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMsg(loyaltyMsg);
+
+      const payload = {
+        cups_required: Number(document.getElementById("cupsRequired").value),
+        reward_expiry_days: Number(document.getElementById("rewardExpiryDays").value),
+        max_cups_per_order: Number(document.getElementById("maxCupsPerOrder").value),
+        roulette_enabled: toBool(document.getElementById("rouletteEnabled").value),
+        allow_manual_adjustment: toBool(document.getElementById("allowManualAdjustment").value),
+        roulette_per_transaction: toBool(document.getElementById("roulettePerTransaction").value)
+      };
+
+      const { error } = await client
+        .from("loyalty_settings")
+        .update(payload)
+        .eq("merchant_id", merchantContext.merchant_id);
+
+      if (error) {
+        showMsg(loyaltyMsg, "تعذر حفظ إعدادات الولاء: " + error.message);
+        return;
+      }
+
+      showMsg(loyaltyMsg, "تم حفظ إعدادات الولاء بنجاح.", "success");
+    });
+
+    rewardsList.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      const card = e.target.closest(".reward-card");
+      if (!card) return;
+
+      const id = card.dataset.id;
+      const msg = card.querySelector("[data-message]");
+      const action = btn.dataset.action;
+
+      hideMsg(msg);
+
+      if (action === "delete") {
+        const confirmed = confirm("هل تريد حذف هذه الجائزة؟");
+        if (!confirmed) return;
+
+        const { error } = await client
+          .from("roulette_rewards")
+          .delete()
+          .eq("id", id)
+          .eq("merchant_id", merchantContext.merchant_id);
+
+        if (error) {
+          showMsg(msg, "تعذر الحذف: " + error.message);
+          return;
+        }
+
+        await loadRewards();
+        return;
+      }
+
+      if (action === "toggle") {
+        const reward = rewards.find((r) => r.id === id);
+        if (!reward) return;
+
+        const { error } = await client
+          .from("roulette_rewards")
+          .update({ is_active: !reward.is_active })
+          .eq("id", id)
+          .eq("merchant_id", merchantContext.merchant_id);
+
+        if (error) {
+          showMsg(msg, "تعذر تغيير الحالة: " + error.message);
+          return;
+        }
+
+        await loadRewards();
+        return;
+      }
+
+      if (action === "save") {
+        const get = (field) => card.querySelector('[data-field="' + field + '"]').value;
+
+        const payload = {
+          title: get("title").trim(),
+          reward_type: get("reward_type"),
+          reward_value: numberOrNull(get("reward_value")),
+          probability: Number(get("probability")),
+          color: get("color"),
+          sort_order: Number(get("sort_order") || 0),
+          daily_limit: numberOrNull(get("daily_limit")),
+          monthly_limit: numberOrNull(get("monthly_limit")),
+          requires_employee_approval: toBool(get("requires_employee_approval")),
+          is_active: toBool(get("is_active"))
+        };
+
+        const { error } = await client
+          .from("roulette_rewards")
+          .update(payload)
+          .eq("id", id)
+          .eq("merchant_id", merchantContext.merchant_id);
+
+        if (error) {
+          showMsg(msg, "تعذر حفظ الجائزة: " + error.message);
+          return;
+        }
+
+        showMsg(msg, "تم حفظ الجائزة.", "success");
+        await loadRewards();
+      }
+    });
+
+    addRewardForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMsg(addRewardMsg);
+
+      const payload = {
+        merchant_id: merchantContext.merchant_id,
+        title: document.getElementById("newTitle").value.trim(),
+        reward_type: document.getElementById("newType").value,
+        reward_value: numberOrNull(document.getElementById("newValue").value),
+        probability: Number(document.getElementById("newProbability").value || 0),
+        color: document.getElementById("newColor").value,
+        sort_order: Number(document.getElementById("newSortOrder").value || 0),
+        daily_limit: numberOrNull(document.getElementById("newDailyLimit").value),
+        monthly_limit: numberOrNull(document.getElementById("newMonthlyLimit").value),
+        requires_employee_approval: toBool(document.getElementById("newApproval").value),
+        is_active: true
+      };
+
+      const { error } = await client
+        .from("roulette_rewards")
+        .insert(payload);
+
+      if (error) {
+        showMsg(addRewardMsg, "تعذر إضافة الجائزة: " + error.message);
+        return;
+      }
+
+      addRewardForm.reset();
+      document.getElementById("newColor").value = "#6F4E37";
+      document.getElementById("newProbability").value = 0;
+      document.getElementById("newSortOrder").value = 10;
+
+      showMsg(addRewardMsg, "تمت إضافة الجائزة بنجاح.", "success");
+      await loadRewards();
+    });
+
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await client.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    async function init() {
+      const ok = await loadContext();
+      if (!ok) return;
+
+      await loadMerchant();
+      await loadLoyalty();
+      await loadRewards();
+    }
+
+    init();
+  </script>
+</body>
+</html>
