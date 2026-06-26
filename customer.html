@@ -144,64 +144,102 @@
 
     .roulette-wrap {
       text-align: center;
+      overflow: hidden;
     }
 
     .wheel-shell {
-      width: min(300px, 82vw);
-      height: min(300px, 82vw);
-      margin: 14px auto 18px;
+      width: min(330px, 86vw);
+      height: min(330px, 86vw);
+      margin: 18px auto 22px;
       position: relative;
+      filter: drop-shadow(0 24px 34px rgba(43, 33, 27, 0.22));
+    }
+
+    .wheel-stage {
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255,255,255,.9), transparent 11%),
+        radial-gradient(circle at 65% 72%, rgba(255,255,255,.22), transparent 18%),
+        linear-gradient(135deg, color-mix(in srgb, var(--secondary) 82%, #fff), var(--primary));
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.38),
+        0 22px 50px rgba(43, 33, 27, 0.24);
+      z-index: 0;
+    }
+
+    .wheel-stage::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      border: 2px dashed rgba(255,255,255,.42);
     }
 
     .wheel-pointer {
       position: absolute;
-      top: -5px;
+      top: -23px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 54px;
+      height: 62px;
+      z-index: 8;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,.24));
+    }
+
+    .wheel-pointer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 16px 16px 22px 22px;
+      background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--secondary) 42%, #fff));
+      border: 2px solid rgba(255,255,255,.85);
+    }
+
+    .wheel-pointer::after {
+      content: "";
+      position: absolute;
+      top: 34px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-top: 34px solid var(--primary);
-      z-index: 3;
-      filter: drop-shadow(0 5px 8px rgba(0,0,0,.2));
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 27px solid #fff;
     }
 
     .wheel {
+      position: relative;
+      z-index: 2;
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 10px solid rgba(255,255,255,.88);
-      box-shadow:
-        0 18px 35px rgba(43, 33, 27, 0.2),
-        inset 0 0 0 2px rgba(255,255,255,.55);
-      background:
-        conic-gradient(
-          #8B8B8B 0deg 60deg,
-          #6F4E37 60deg 120deg,
-          #A77C52 120deg 180deg,
-          #C8A27A 180deg 240deg,
-          #2F855A 240deg 300deg,
-          #805AD5 300deg 360deg
-        );
-      transition: transform 4s cubic-bezier(.12,.8,.18,1);
-      position: relative;
+      border: 12px solid rgba(255,255,255,.94);
+      background: conic-gradient(var(--primary), var(--secondary), var(--primary));
+      transition: transform 4.6s cubic-bezier(.08,.84,.13,1);
       overflow: hidden;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.55),
+        inset 0 0 34px rgba(0,0,0,.16),
+        0 16px 32px rgba(43, 33, 27, 0.18);
     }
 
-    .wheel::after {
-      content: "☕";
+    .wheel::before {
+      content: "";
       position: absolute;
-      inset: 50%;
-      transform: translate(-50%, -50%);
-      width: 74px;
-      height: 74px;
-      border-radius: 999px;
-      background: #fff;
-      display: grid;
-      place-items: center;
-      font-size: 32px;
-      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255,255,255,.35), transparent 18%),
+        radial-gradient(circle at 70% 76%, rgba(0,0,0,.16), transparent 22%);
+      pointer-events: none;
+      z-index: 2;
     }
 
     .wheel-labels {
@@ -209,6 +247,76 @@
       inset: 0;
       border-radius: 50%;
       pointer-events: none;
+      z-index: 3;
+    }
+
+    .wheel-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 92px;
+      min-height: 34px;
+      margin-left: -46px;
+      margin-top: -17px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1.25;
+      text-shadow: 0 2px 6px rgba(0,0,0,.45);
+      transform-origin: center center;
+      padding: 3px 4px;
+    }
+
+    .wheel-center {
+      position: absolute;
+      z-index: 5;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 28%, #fff, #f5eadf 48%, color-mix(in srgb, var(--secondary) 72%, #fff));
+      border: 7px solid rgba(255,255,255,.92);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      box-shadow:
+        0 10px 20px rgba(0,0,0,.24),
+        inset 0 0 0 1px rgba(111,78,55,.18);
+    }
+
+    .wheel-lamps {
+      position: absolute;
+      inset: -7px;
+      border-radius: 50%;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .wheel-lamp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 9px;
+      height: 9px;
+      margin: -4.5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 0 10px rgba(255,255,255,.9);
+      transform-origin: center center;
+    }
+
+    .wheel.is-spinning .wheel-lamp:nth-child(odd) {
+      opacity: .35;
+    }
+
+    .wheel.is-spinning .wheel-lamp:nth-child(even) {
+      opacity: 1;
     }
 
     .result-card {
@@ -301,6 +409,12 @@
       .loyalty-number strong {
         font-size: 46px;
       }
+
+      .wheel-label {
+        width: 78px;
+        margin-left: -39px;
+        font-size: 11px;
+      }
     }
   </style>
 </head>
@@ -367,8 +481,15 @@
         </p>
 
         <div class="wheel-shell">
+          <div class="wheel-stage"></div>
           <div class="wheel-pointer"></div>
-          <div id="wheel" class="wheel"></div>
+
+          <div id="wheel" class="wheel">
+            <div id="wheelLabels" class="wheel-labels"></div>
+          </div>
+
+          <div class="wheel-center">☕</div>
+          <div id="wheelLamps" class="wheel-lamps"></div>
         </div>
 
         <button id="spinBtn" class="full" type="button">
@@ -412,6 +533,7 @@
     let pageData = null;
     let pendingTransactionId = null;
     let currentRotation = 0;
+    let rouletteRewards = [];
 
     const loadingCard = document.getElementById("loadingCard");
     const errorCard = document.getElementById("errorCard");
@@ -433,6 +555,8 @@
     const spinMsg = document.getElementById("spinMsg");
     const spinResult = document.getElementById("spinResult");
     const wheel = document.getElementById("wheel");
+    const wheelLabels = document.getElementById("wheelLabels");
+    const wheelLamps = document.getElementById("wheelLamps");
 
     const walletList = document.getElementById("walletList");
     const txList = document.getElementById("txList");
@@ -470,6 +594,119 @@
       } catch (e) {
         return dateValue;
       }
+    }
+
+    function safeColor(value, fallback) {
+      if (typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value.trim())) {
+        return value.trim();
+      }
+
+      return fallback || "#6F4E37";
+    }
+
+    function shortLabel(text) {
+      const value = String(text || "جائزة").trim();
+
+      if (value.length <= 13) return value;
+
+      return value.slice(0, 12) + "…";
+    }
+
+    function normalizeRewards(items) {
+      const source = Array.isArray(items) ? items : [];
+
+      const active = source
+        .filter((r) => r && Number(r.probability || 0) > 0)
+        .map((r, index) => ({
+          ...r,
+          probability: Number(r.probability || 0),
+          color: safeColor(r.color, index % 2 === 0 ? "#6F4E37" : "#C8A27A")
+        }));
+
+      if (active.length > 0) return active;
+
+      return [
+        { id: "fallback-1", title: "حظ أوفر", reward_type: "no_prize", probability: 35, color: "#8B8B8B" },
+        { id: "fallback-2", title: "خصم 10%", reward_type: "discount_percent", probability: 25, color: "#6F4E37" },
+        { id: "fallback-3", title: "إضافة مجانية", reward_type: "free_addon", probability: 15, color: "#A77C52" },
+        { id: "fallback-4", title: "ترقية الحجم", reward_type: "size_upgrade", probability: 15, color: "#C8A27A" },
+        { id: "fallback-5", title: "كوب مجاني", reward_type: "free_cup", probability: 5, color: "#2F855A" },
+        { id: "fallback-6", title: "كوب إضافي", reward_type: "extra_cups", probability: 5, color: "#805AD5" }
+      ];
+    }
+
+    function getRewardSegments() {
+      const items = normalizeRewards(rouletteRewards);
+      const total = items.reduce((sum, r) => sum + Number(r.probability || 0), 0) || 1;
+
+      let start = 0;
+
+      return items.map((reward) => {
+        const size = (Number(reward.probability || 0) / total) * 360;
+        const segment = {
+          ...reward,
+          start,
+          end: start + size,
+          mid: start + size / 2,
+          size
+        };
+
+        start += size;
+        return segment;
+      });
+    }
+
+    function buildWheel() {
+      const segments = getRewardSegments();
+
+      const gradient = segments.map((s) => {
+        return `${s.color} ${s.start}deg ${s.end}deg`;
+      }).join(", ");
+
+      wheel.style.background = `conic-gradient(${gradient})`;
+
+      wheelLabels.innerHTML = "";
+
+      segments.forEach((s) => {
+        const label = document.createElement("div");
+        label.className = "wheel-label";
+
+        const distance = s.size < 28 ? 86 : 98;
+
+        label.style.transform =
+          `rotate(${s.mid}deg) translateY(-${distance}px) rotate(${-s.mid}deg)`;
+
+        label.textContent = shortLabel(s.title);
+        wheelLabels.appendChild(label);
+      });
+
+      wheelLamps.innerHTML = "";
+
+      for (let i = 0; i < 24; i++) {
+        const lamp = document.createElement("span");
+        lamp.className = "wheel-lamp";
+        lamp.style.transform = `rotate(${i * 15}deg) translateY(-178px)`;
+        wheelLamps.appendChild(lamp);
+      }
+    }
+
+    function getSelectedRewardAngle(rewardId, rewardTitle) {
+      const segments = getRewardSegments();
+
+      let selected = segments.find((s) => String(s.id) === String(rewardId));
+
+      if (!selected && rewardTitle) {
+        selected = segments.find((s) => String(s.title).trim() === String(rewardTitle).trim());
+      }
+
+      if (!selected) {
+        selected = segments[0];
+      }
+
+      const safeJitter = Math.max(0, Math.min(8, selected.size / 4));
+      const jitter = (Math.random() * safeJitter * 2) - safeJitter;
+
+      return selected.mid + jitter;
     }
 
     function applyTheme(merchant) {
@@ -550,7 +787,15 @@
     }
 
     function renderRoulette(loyalty) {
+      buildWheel();
+
       pendingTransactionId = loyalty.pending_transaction_id || null;
+
+      if (!rouletteRewards || rouletteRewards.length === 0) {
+        spinBtn.disabled = true;
+        rouletteText.textContent = "لم يتم إعداد خانات الروليت بعد من لوحة الإعدادات.";
+        return;
+      }
 
       if (!loyalty.roulette_enabled) {
         spinBtn.disabled = true;
@@ -572,6 +817,7 @@
       pageData = data;
 
       applyTheme(data.merchant);
+      rouletteRewards = data.roulette_rewards || [];
 
       merchantName.textContent = data.merchant.name || "كافيه";
       customerName.textContent = data.customer.name || "عميلنا العزيز";
@@ -646,12 +892,18 @@
         return;
       }
 
-      const extraRotation = 1440 + Math.floor(Math.random() * 360);
-      currentRotation += extraRotation;
+      const reward = data.reward || {};
+      const targetAngle = getSelectedRewardAngle(reward.id, reward.title);
+
+      const currentMod = ((currentRotation % 360) + 360) % 360;
+      const deltaToPointer = (360 - ((currentMod + targetAngle) % 360)) % 360;
+
+      currentRotation += 1440 + deltaToPointer;
+
+      wheel.classList.add("is-spinning");
       wheel.style.transform = "rotate(" + currentRotation + "deg)";
 
       setTimeout(() => {
-        const reward = data.reward || {};
         spinResult.classList.add("show");
 
         if (reward.reward_type === "no_prize") {
@@ -673,9 +925,10 @@
         pendingTransactionId = null;
         spinBtn.disabled = true;
         spinBtn.textContent = "تم استخدام الروليت";
+        wheel.classList.remove("is-spinning");
 
         setTimeout(loadPage, 900);
-      }, 4100);
+      }, 4700);
     });
 
     installBtn.addEventListener("click", () => {
