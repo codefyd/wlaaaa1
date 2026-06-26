@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>تسجيل الدخول | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+</head>
+
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <div class="logo-mark">☕</div>
+
+      <h1>تسجيل الدخول</h1>
+      <p class="subtitle">
+        ادخل بحساب الموظف أو مدير الكافيه للانتقال إلى لوحة الكاشير وإدارة الولاء.
+      </p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">البريد الإلكتروني</label>
+          <input id="email" type="email" placeholder="example@email.com" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">كلمة المرور</label>
+          <input id="password" type="password" placeholder="••••••••" required />
+        </div>
+
+        <button id="loginBtn" class="full" type="submit">
+          دخول
+        </button>
+
+        <div id="msg" class="alert"></div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.APP_CONFIG.SUPABASE_URL,
+      window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const form = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const msg = document.getElementById("msg");
+
+    function showMsg(text, type = "error") {
+      msg.className = "alert show " + type;
+      msg.textContent = text;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      msg.className = "alert";
+      loginBtn.disabled = true;
+      loginBtn.textContent = "جاري الدخول...";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { error } = await client.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "دخول";
+        showMsg("تعذر تسجيل الدخول: " + error.message);
+        return;
+      }
+
+      const { data: context, error: ctxError } = await client.rpc("get_my_merchant_context");
+
+      if (ctxError || !context || context.length === 0) {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "دخول";
+        showMsg("تم تسجيل الدخول، لكن لا يوجد كافيه مرتبط بهذا المستخدم في جدول merchant_users.");
+        return;
+      }
+
+      showMsg("تم تسجيل الدخول بنجاح، جاري التحويل...", "success");
+
+      setTimeout(() => {
+        window.location.href = "cashier.html";
+      }, 600);
+    });
+
+    async function checkSession() {
+      const { data } = await client.auth.getSession();
+
+      if (data.session) {
+        window.location.href = "cashier.html";
+      }
+    }
+
+    checkSession();
+  </script>
+</body>
+</html>
