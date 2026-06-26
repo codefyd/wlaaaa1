@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>لوحة الكاشير | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+
+  <style>
+    .cashier-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .mini-text {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .customer-box {
+      display: none;
+    }
+
+    .customer-box.show {
+      display: block;
+    }
+
+    .customer-name {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 99px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      background: rgba(111, 78, 55, 0.1);
+      color: var(--primary);
+      margin: 4px 0;
+    }
+
+    .pill.success {
+      color: var(--success);
+      background: rgba(47, 133, 90, 0.1);
+    }
+
+    .pill.danger {
+      color: var(--danger);
+      background: rgba(180, 35, 24, 0.1);
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .copy-box {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px dashed var(--border);
+      background: rgba(255,255,255,.72);
+      word-break: break-all;
+      direction: ltr;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .copy-box.show {
+      display: block;
+    }
+
+    .big-number {
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    @media (max-width: 900px) {
+      .cashier-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">لوحة الكاشير</h1>
+        <p id="merchantInfo" class="subtitle" style="margin-bottom:0;">
+          جاري تحميل بيانات الكافيه...
+        </p>
+      </div>
+
+      <nav class="nav">
+        <a href="cashier.html">الكاشير</a>
+        <a href="settings.html">الإعدادات</a>
+        <a href="#" id="logoutLink">تسجيل الخروج</a>
+      </nav>
+    </header>
+
+    <section class="cashier-layout">
+      <!-- البحث عن العميل -->
+      <div class="card">
+        <div class="section-title">
+          <h2>تسجيل عملية جديدة</h2>
+          <span class="pill">سريع للكاشير</span>
+        </div>
+
+        <p class="mini-text">
+          أدخل رقم جوال العميل، ثم أضف عدد الأكواب بعد ظهور بياناته.
+        </p>
+
+        <form id="customerForm">
+          <div class="form-group">
+            <label for="phone">رقم جوال العميل</label>
+            <input
+              id="phone"
+              type="tel"
+              inputmode="numeric"
+              placeholder="05xxxxxxxx"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="customerName">اسم العميل - اختياري</label>
+            <input
+              id="customerName"
+              type="text"
+              placeholder="مثال: صالح"
+            />
+          </div>
+
+          <button id="searchBtn" class="full" type="submit">
+            بحث / إنشاء العميل
+          </button>
+
+          <div id="searchMsg" class="alert"></div>
+        </form>
+
+        <div id="customerBox" class="customer-box">
+          <hr style="border:0;border-top:1px solid var(--border);margin:22px 0;">
+
+          <div class="customer-name" id="customerDisplayName">عميل</div>
+          <div class="mini-text" id="customerPhone">-</div>
+
+          <div style="margin: 12px 0;">
+            <span id="phoneStatus" class="pill">رقم الجوال</span>
+            <span id="verifiedStatus" class="pill">واتساب</span>
+          </div>
+
+          <div class="grid two">
+            <div class="stat">
+              <span>إجمالي الأكواب</span>
+              <strong id="totalCups">0</strong>
+            </div>
+
+            <div class="stat">
+              <span>الرصيد الحالي</span>
+              <strong>
+                <span id="currentCups">0</span>
+                /
+                <span id="cupsRequired">10</span>
+              </strong>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <div class="progress">
+              <span id="cupsProgress"></span>
+            </div>
+            <p id="progressText" class="mini-text" style="margin-top:10px;">
+              -
+            </p>
+          </div>
+
+          <form id="cupsForm" style="margin-top: 18px;">
+            <div class="form-group">
+              <label for="cupsCount">عدد أكواب الطلب</label>
+              <input
+                id="cupsCount"
+                type="number"
+                min="1"
+                max="20"
+                placeholder="مثال: 2"
+                required
+              />
+            </div>
+
+            <button id="addCupsBtn" class="full" type="submit">
+              إضافة الأكواب
+            </button>
+
+            <div id="cupsMsg" class="alert"></div>
+          </form>
+
+          <div class="actions-row">
+            <button id="openCustomerBtn" class="secondary" type="button">
+              فتح صفحة العميل
+            </button>
+
+            <button id="copyLinkBtn" class="ghost" type="button">
+              نسخ رابط العميل
+            </button>
+          </div>
+
+          <div id="customerLinkBox" class="copy-box"></div>
+        </div>
+      </div>
+
+      <!-- ملخص العملية -->
+      <aside class="card">
+        <div class="section-title">
+          <h2>ملخص سريع</h2>
+          <span class="pill success">نشط</span>
+        </div>
+
+        <div class="grid">
+          <div class="stat">
+            <span>الكافيه</span>
+            <strong id="summaryMerchant">-</strong>
+          </div>
+
+          <div class="stat">
+            <span>الموظف</span>
+            <strong id="summaryEmployee">-</strong>
+          </div>
+
+          <div class="stat">
+            <span>الحد المطلوب للكوب المجاني</span>
+            <strong>
+              <span id="summaryRequired">10</span>
+              أكواب
+            </strong>
+          </div>
+
+          <div class="stat">
+            <span>مكافآت العميل المتاحة</span>
+            <strong id="availableRewards">0</strong>
+          </div>
+        </div>
+
+        <p class="mini-text" style="margin-top:18px;">
+          بعد إضافة الأكواب، افتح صفحة العميل ليشاهد تقدمه ويلعب الروليت إذا كانت هناك عملية مؤهلة.
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.APP_CONFIG.SUPABASE_URL,
+      window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
+    );
+
+    let merchantContext = null;
+    let currentCustomer = null;
+    let currentToken = null;
+    let lastTransactionId = null;
+
+    const logoutLink = document.getElementById("logoutLink");
+
+    const merchantInfo = document.getElementById("merchantInfo");
+    const summaryMerchant = document.getElementById("summaryMerchant");
+    const summaryEmployee = document.getElementById("summaryEmployee");
+    const summaryRequired = document.getElementById("summaryRequired");
+
+    const customerForm = document.getElementById("customerForm");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchMsg = document.getElementById("searchMsg");
+
+    const customerBox = document.getElementById("customerBox");
+    const customerDisplayName = document.getElementById("customerDisplayName");
+    const customerPhone = document.getElementById("customerPhone");
+    const phoneStatus = document.getElementById("phoneStatus");
+    const verifiedStatus = document.getElementById("verifiedStatus");
+
+    const totalCups = document.getElementById("totalCups");
+    const currentCups = document.getElementById("currentCups");
+    const cupsRequired = document.getElementById("cupsRequired");
+    const cupsProgress = document.getElementById("cupsProgress");
+    const progressText = document.getElementById("progressText");
+    const availableRewards = document.getElementById("availableRewards");
+
+    const cupsForm = document.getElementById("cupsForm");
+    const addCupsBtn = document.getElementById("addCupsBtn");
+    const cupsMsg = document.getElementById("cupsMsg");
+
+    const openCustomerBtn = document.getElementById("openCustomerBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const customerLinkBox = document.getElementById("customerLinkBox");
+
+    function showMsg(el, text, type = "error") {
+      el.className = "alert show " + type;
+      el.textContent = text;
+    }
+
+    function hideMsg(el) {
+      el.className = "alert";
+      el.textContent = "";
+    }
+
+    function customerPageUrl() {
+      if (!currentToken) return "";
+      const base = window.location.href.replace(/cashier\.html.*$/, "");
+      return base + "customer.html?token=" + encodeURIComponent(currentToken);
+    }
+
+    function updateProgress(total, current, required) {
+      const safeRequired = Number(required || 10);
+      const safeCurrent = Number(current || 0);
+      const percent = Math.min(100, Math.round((safeCurrent / safeRequired) * 100));
+
+      cupsProgress.style.width = percent + "%";
+
+      const remaining = safeCurrent === 0
+        ? safeRequired
+        : Math.max(safeRequired - safeCurrent, 0);
+
+      if (safeCurrent === 0) {
+        progressText.textContent = "ابدأ التجميع الآن. يحتاج العميل " + safeRequired + " أكواب للحصول على كوب مجاني.";
+      } else if (remaining === 0) {
+        progressText.textContent = "العميل وصل للحد المطلوب وحصل على مكافأة كوب مجاني.";
+      } else {
+        progressText.textContent = "باقي للعميل " + remaining + " كوب للوصول إلى الكوب المجاني.";
+      }
+    }
+
+    function renderCustomer(row) {
+      currentCustomer = row;
+      currentToken = row.access_token;
+
+      customerBox.classList.add("show");
+
+      customerDisplayName.textContent = row.customer_name || "عميل بدون اسم";
+      customerPhone.textContent = row.phone || "-";
+
+      totalCups.textContent = row.total_cups ?? 0;
+      currentCups.textContent = row.current_cups ?? 0;
+      cupsRequired.textContent = row.cups_required ?? 10;
+      summaryRequired.textContent = row.cups_required ?? 10;
+      availableRewards.textContent = row.available_rewards ?? 0;
+
+      if (row.phone_status === "valid") {
+        phoneStatus.className = "pill success";
+        phoneStatus.textContent = "رقم صحيح";
+      } else if (row.phone_status === "empty") {
+        phoneStatus.className = "pill danger";
+        phoneStatus.textContent = "رقم فارغ";
+      } else {
+        phoneStatus.className = "pill danger";
+        phoneStatus.textContent = "رقم غير صحيح";
+      }
+
+      if (row.whatsapp_verified) {
+        verifiedStatus.className = "pill success";
+        verifiedStatus.textContent = "واتساب موثق";
+      } else {
+        verifiedStatus.className = "pill";
+        verifiedStatus.textContent = "لم يتم توثيق واتساب";
+      }
+
+      updateProgress(row.total_cups, row.current_cups, row.cups_required);
+
+      customerLinkBox.classList.remove("show");
+      customerLinkBox.textContent = "";
+    }
+
+    async function requireSession() {
+      const { data } = await client.auth.getSession();
+
+      if (!data.session) {
+        window.location.href = "login.html";
+        return false;
+      }
+
+      return true;
+    }
+
+    async function loadContext() {
+      const ok = await requireSession();
+      if (!ok) return;
+
+      const { data, error } = await client.rpc("get_my_merchant_context");
+
+      if (error || !data || data.length === 0) {
+        merchantInfo.textContent = "لا يوجد كافيه مرتبط بهذا المستخدم.";
+        summaryMerchant.textContent = "-";
+        summaryEmployee.textContent = "-";
+        return;
+      }
+
+      merchantContext = data[0];
+
+      document.documentElement.style.setProperty("--primary", merchantContext.primary_color || "#6F4E37");
+      document.documentElement.style.setProperty("--secondary", merchantContext.secondary_color || "#C8A27A");
+      document.documentElement.style.setProperty("--bg", merchantContext.background_color || "#F7F1EA");
+      document.documentElement.style.setProperty("--surface", merchantContext.surface_color || "#FFFFFF");
+      document.documentElement.style.setProperty("--text", merchantContext.text_color || "#2B211B");
+
+      merchantInfo.textContent = merchantContext.merchant_name + " — " + (merchantContext.role || "موظف");
+      summaryMerchant.textContent = merchantContext.merchant_name || "-";
+      summaryEmployee.textContent = merchantContext.full_name || "موظف";
+      summaryRequired.textContent = merchantContext.cups_required || 10;
+
+      const cupsInput = document.getElementById("cupsCount");
+      cupsInput.max = merchantContext.max_cups_per_order || 20;
+      cupsInput.placeholder = "الحد الأعلى: " + (merchantContext.max_cups_per_order || 20);
+    }
+
+    customerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      hideMsg(searchMsg);
+      hideMsg(cupsMsg);
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = "جاري البحث...";
+
+      const phone = document.getElementById("phone").value.trim();
+      const name = document.getElementById("customerName").value.trim();
+
+      const { data, error } = await client.rpc("cashier_find_or_create_customer", {
+        p_phone: phone,
+        p_name: name || null
+      });
+
+      searchBtn.disabled = false;
+      searchBtn.textContent = "بحث / إنشاء العميل";
+
+      if (error) {
+        showMsg(searchMsg, error.message || "تعذر البحث عن العميل");
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        showMsg(searchMsg, "لم يتم العثور على نتيجة.");
+        return;
+      }
+
+      renderCustomer(data[0]);
+      showMsg(searchMsg, "تم تحميل بيانات العميل بنجاح.", "success");
+    });
+
+    cupsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      hideMsg(cupsMsg);
+
+      if (!currentCustomer) {
+        showMsg(cupsMsg, "ابحث عن العميل أولًا.");
+        return;
+      }
+
+      const count = Number(document.getElementById("cupsCount").value);
+
+      if (!count || count <= 0) {
+        showMsg(cupsMsg, "أدخل عدد أكواب صحيح.");
+        return;
+      }
+
+      addCupsBtn.disabled = true;
+      addCupsBtn.textContent = "جاري الإضافة...";
+
+      const { data, error } = await client.rpc("cashier_add_cups", {
+        p_customer_id: currentCustomer.customer_id,
+        p_cups_count: count,
+        p_branch_id: merchantContext?.branch_id || null
+      });
+
+      addCupsBtn.disabled = false;
+      addCupsBtn.textContent = "إضافة الأكواب";
+
+      if (error) {
+        showMsg(cupsMsg, error.message || "تعذر إضافة الأكواب");
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        showMsg(cupsMsg, "لم ترجع نتيجة من العملية.");
+        return;
+      }
+
+      const row = data[0];
+
+      lastTransactionId = row.transaction_id;
+      currentToken = row.access_token;
+
+      currentCustomer.total_cups = row.total_cups;
+      currentCustomer.current_cups = row.current_cups;
+      currentCustomer.cups_required = row.cups_required;
+      currentCustomer.available_rewards = row.available_rewards;
+      currentCustomer.access_token = row.access_token;
+
+      totalCups.textContent = row.total_cups ?? 0;
+      currentCups.textContent = row.current_cups ?? 0;
+      cupsRequired.textContent = row.cups_required ?? 10;
+      availableRewards.textContent = row.available_rewards ?? 0;
+
+      updateProgress(row.total_cups, row.current_cups, row.cups_required);
+
+      document.getElementById("cupsCount").value = "";
+
+      let message = "تمت إضافة الأكواب بنجاح.";
+
+      if (row.new_free_cup_rewards && row.new_free_cup_rewards > 0) {
+        message += " حصل العميل على " + row.new_free_cup_rewards + " كوب مجاني.";
+      }
+
+      message += " يمكن الآن فتح صفحة العميل للروليت.";
+
+      showMsg(cupsMsg, message, "success");
+    });
+
+    openCustomerBtn.addEventListener("click", () => {
+      const url = customerPageUrl();
+
+      if (!url) {
+        showMsg(cupsMsg, "لا يوجد رابط عميل. ابحث عن العميل أولًا.");
+        return;
+      }
+
+      window.open(url, "_blank");
+    });
+
+    copyLinkBtn.addEventListener("click", async () => {
+      const url = customerPageUrl();
+
+      if (!url) {
+        showMsg(cupsMsg, "لا يوجد رابط عميل. ابحث عن العميل أولًا.");
+        return;
+      }
+
+      customerLinkBox.classList.add("show");
+      customerLinkBox.textContent = url;
+
+      try {
+        await navigator.clipboard.writeText(url);
+        showMsg(cupsMsg, "تم نسخ رابط العميل.", "success");
+      } catch (e) {
+        showMsg(cupsMsg, "ظهر الرابط بالأسفل، انسخه يدويًا.", "success");
+      }
+    });
+
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await client.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    loadContext();
+  </script>
+</body>
+</html>
