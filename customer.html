@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>صفحة العميل | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--secondary) 34%, transparent), transparent 35%),
+        radial-gradient(circle at bottom left, color-mix(in srgb, var(--primary) 18%, transparent), transparent 38%),
+        var(--bg);
+    }
+
+    .customer-app {
+      width: min(520px, calc(100% - 22px));
+      margin: 0 auto;
+      padding: 18px 0 32px;
+      min-height: 100vh;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: 24px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 22px 55px rgba(43, 33, 27, 0.2);
+      margin-bottom: 16px;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.13);
+      left: -80px;
+      top: -70px;
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .merchant-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.18);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+
+    .merchant-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .merchant-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .customer-welcome {
+      position: relative;
+      z-index: 1;
+      margin-top: 22px;
+    }
+
+    .customer-welcome p {
+      opacity: .88;
+      margin-bottom: 4px;
+    }
+
+    .customer-welcome h1 {
+      color: #fff;
+      font-size: 32px;
+      margin: 0;
+    }
+
+    .install-btn {
+      margin-top: 16px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.24);
+      color: #fff;
+      padding: 11px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+    }
+
+    .loyalty-card {
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      backdrop-filter: blur(14px);
+    }
+
+    .loyalty-number {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .loyalty-number strong {
+      font-size: 54px;
+      line-height: .9;
+      color: var(--primary);
+    }
+
+    .loyalty-number span {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .roulette-wrap {
+      text-align: center;
+    }
+
+    .wheel-shell {
+      width: min(300px, 82vw);
+      height: min(300px, 82vw);
+      margin: 14px auto 18px;
+      position: relative;
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 34px solid var(--primary);
+      z-index: 3;
+      filter: drop-shadow(0 5px 8px rgba(0,0,0,.2));
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 10px solid rgba(255,255,255,.88);
+      box-shadow:
+        0 18px 35px rgba(43, 33, 27, 0.2),
+        inset 0 0 0 2px rgba(255,255,255,.55);
+      background:
+        conic-gradient(
+          #8B8B8B 0deg 60deg,
+          #6F4E37 60deg 120deg,
+          #A77C52 120deg 180deg,
+          #C8A27A 180deg 240deg,
+          #2F855A 240deg 300deg,
+          #805AD5 300deg 360deg
+        );
+      transition: transform 4s cubic-bezier(.12,.8,.18,1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wheel::after {
+      content: "☕";
+      position: absolute;
+      inset: 50%;
+      transform: translate(-50%, -50%);
+      width: 74px;
+      height: 74px;
+      border-radius: 999px;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 32px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    }
+
+    .wheel-labels {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .result-card {
+      display: none;
+      margin-top: 14px;
+      border-radius: 22px;
+      padding: 16px;
+      background: rgba(47, 133, 90, 0.08);
+      border: 1px solid rgba(47, 133, 90, 0.18);
+      color: var(--success);
+      font-weight: 900;
+      line-height: 1.8;
+    }
+
+    .result-card.show {
+      display: block;
+    }
+
+    .wallet-list,
+    .tx-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .wallet-item,
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    .wallet-item strong,
+    .tx-item strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
+      color: var(--muted);
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+      z-index: 50;
+      padding: 18px;
+      place-items: center;
+    }
+
+    .modal.show {
+      display: grid;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.25);
+    }
+
+    .modal-card ol {
+      line-height: 2;
+      padding-right: 22px;
+    }
+
+    @media (max-width: 480px) {
+      .hero-card {
+        border-radius: 28px;
+        padding: 20px;
+      }
+
+      .customer-welcome h1 {
+        font-size: 28px;
+      }
+
+      .loyalty-number strong {
+        font-size: 46px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="customer-app">
+    <section id="loadingCard" class="loyalty-card">
+      <h2>جاري تحميل صفحة العميل...</h2>
+      <p class="muted">ثواني بسيطة ونجهز لك بيانات الولاء.</p>
+    </section>
+
+    <section id="errorCard" class="loyalty-card" style="display:none;">
+      <h2>تعذر فتح الصفحة</h2>
+      <p id="errorText" class="muted">الرابط غير صالح أو منتهي.</p>
+    </section>
+
+    <div id="appContent" style="display:none;">
+      <section class="hero-card">
+        <div class="hero-top">
+          <div id="merchantLogo" class="merchant-logo">☕</div>
+          <div>
+            <p class="merchant-title" id="merchantName">كافيه</p>
+            <p style="margin:4px 0 0;opacity:.85;">بطاقة الولاء الرقمية</p>
+          </div>
+        </div>
+
+        <div class="customer-welcome">
+          <p>أهلًا بك</p>
+          <h1 id="customerName">عميلنا العزيز</h1>
+          <button id="installBtn" class="install-btn" type="button">
+            إضافة للشاشة الرئيسية
+          </button>
+        </div>
+      </section>
+
+      <section class="loyalty-card">
+        <div class="loyalty-number">
+          <div>
+            <span>رصيدك الحالي</span>
+            <strong>
+              <span id="currentCups">0</span>/<span id="cupsRequired">10</span>
+            </strong>
+          </div>
+
+          <div style="text-align:left;">
+            <span>الإجمالي</span>
+            <strong id="totalCups" style="font-size:34px;">0</strong>
+          </div>
+        </div>
+
+        <div class="progress">
+          <span id="progressBar"></span>
+        </div>
+
+        <p id="progressText" class="muted" style="margin-top:12px;margin-bottom:0;">
+          -
+        </p>
+      </section>
+
+      <section class="loyalty-card roulette-wrap">
+        <h2>روليت المكافآت</h2>
+        <p id="rouletteText" class="muted">
+          بعد كل عملية شراء مؤهلة، تقدر تلعب الروليت وتحصل على مكافأة.
+        </p>
+
+        <div class="wheel-shell">
+          <div class="wheel-pointer"></div>
+          <div id="wheel" class="wheel"></div>
+        </div>
+
+        <button id="spinBtn" class="full" type="button">
+          العب الآن
+        </button>
+
+        <div id="spinResult" class="result-card"></div>
+        <div id="spinMsg" class="alert"></div>
+      </section>
+
+      <section class="loyalty-card">
+        <h2>مكافآتي</h2>
+        <p class="muted">المكافآت المتاحة لديك في هذا الكافيه.</p>
+        <div id="walletList" class="wallet-list"></div>
+      </section>
+
+      <section class="loyalty-card">
+        <h2>آخر الزيارات</h2>
+        <div id="txList" class="tx-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="installModal" class="modal">
+    <div class="modal-card">
+      <h2>إضافة الصفحة للشاشة الرئيسية</h2>
+      <div id="installSteps" class="muted"></div>
+      <button id="closeInstallModal" class="full" type="button">تم</button>
+    </div>
+  </div>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.APP_CONFIG.SUPABASE_URL,
+      window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    let pageData = null;
+    let pendingTransactionId = null;
+    let currentRotation = 0;
+
+    const loadingCard = document.getElementById("loadingCard");
+    const errorCard = document.getElementById("errorCard");
+    const errorText = document.getElementById("errorText");
+    const appContent = document.getElementById("appContent");
+
+    const merchantLogo = document.getElementById("merchantLogo");
+    const merchantName = document.getElementById("merchantName");
+    const customerName = document.getElementById("customerName");
+
+    const currentCups = document.getElementById("currentCups");
+    const cupsRequired = document.getElementById("cupsRequired");
+    const totalCups = document.getElementById("totalCups");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    const rouletteText = document.getElementById("rouletteText");
+    const spinBtn = document.getElementById("spinBtn");
+    const spinMsg = document.getElementById("spinMsg");
+    const spinResult = document.getElementById("spinResult");
+    const wheel = document.getElementById("wheel");
+
+    const walletList = document.getElementById("walletList");
+    const txList = document.getElementById("txList");
+
+    const installBtn = document.getElementById("installBtn");
+    const installModal = document.getElementById("installModal");
+    const installSteps = document.getElementById("installSteps");
+    const closeInstallModal = document.getElementById("closeInstallModal");
+
+    function showError(text) {
+      loadingCard.style.display = "none";
+      appContent.style.display = "none";
+      errorCard.style.display = "block";
+      errorText.textContent = text || "تعذر فتح صفحة العميل.";
+    }
+
+    function showMsg(el, text, type = "error") {
+      el.className = "alert show " + type;
+      el.textContent = text;
+    }
+
+    function hideMsg(el) {
+      el.className = "alert";
+      el.textContent = "";
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "-";
+
+      try {
+        return new Intl.DateTimeFormat("ar-SA", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(new Date(dateValue));
+      } catch (e) {
+        return dateValue;
+      }
+    }
+
+    function applyTheme(merchant) {
+      document.documentElement.style.setProperty("--primary", merchant.primary_color || "#6F4E37");
+      document.documentElement.style.setProperty("--secondary", merchant.secondary_color || "#C8A27A");
+      document.documentElement.style.setProperty("--bg", merchant.background_color || "#F7F1EA");
+      document.documentElement.style.setProperty("--surface", merchant.surface_color || "#FFFFFF");
+      document.documentElement.style.setProperty("--text", merchant.text_color || "#2B211B");
+    }
+
+    function updateProgress(loyalty) {
+      const required = Number(loyalty.cups_required || 10);
+      const current = Number(loyalty.current_cups || 0);
+      const total = Number(loyalty.total_cups || 0);
+      const percent = Math.min(100, Math.round((current / required) * 100));
+
+      currentCups.textContent = current;
+      cupsRequired.textContent = required;
+      totalCups.textContent = total;
+      progressBar.style.width = percent + "%";
+
+      if (current === 0) {
+        progressText.textContent = "ابدأ التجميع من جديد. تحتاج " + required + " أكواب للحصول على كوب مجاني.";
+      } else {
+        const remaining = Math.max(required - current, 0);
+        progressText.textContent = remaining === 0
+          ? "مبروك، وصلت للحد المطلوب."
+          : "باقي لك " + remaining + " كوب للحصول على كوب مجاني.";
+      }
+    }
+
+    function renderWallet(items) {
+      walletList.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        walletList.innerHTML = '<div class="empty-state">لا توجد مكافآت متاحة حاليًا.</div>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "wallet-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${item.reward_title || "مكافأة"}</strong>
+            <span class="muted">${item.expires_at ? "تنتهي: " + formatDate(item.expires_at) : "بدون تاريخ انتهاء"}</span>
+          </div>
+          <span class="pill success">متاحة</span>
+        `;
+
+        walletList.appendChild(div);
+      });
+    }
+
+    function renderTransactions(items) {
+      txList.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        txList.innerHTML = '<div class="empty-state">لا توجد زيارات مسجلة بعد.</div>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "tx-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${item.cups_count} كوب</strong>
+            <span class="muted">${formatDate(item.transaction_at)}</span>
+          </div>
+          <span class="pill">${item.source === "cashier" ? "شراء" : "مكافأة"}</span>
+        `;
+
+        txList.appendChild(div);
+      });
+    }
+
+    function renderRoulette(loyalty) {
+      pendingTransactionId = loyalty.pending_transaction_id || null;
+
+      if (!loyalty.roulette_enabled) {
+        spinBtn.disabled = true;
+        rouletteText.textContent = "الروليت غير مفعلة حاليًا من الكافيه.";
+        return;
+      }
+
+      if (!loyalty.can_spin || !pendingTransactionId) {
+        spinBtn.disabled = true;
+        rouletteText.textContent = "لا توجد عملية شراء جديدة مؤهلة للروليت حاليًا.";
+        return;
+      }
+
+      spinBtn.disabled = false;
+      rouletteText.textContent = "لديك عملية شراء مؤهلة. اضغط الزر وشاهد مكافأتك.";
+    }
+
+    function renderPage(data) {
+      pageData = data;
+
+      applyTheme(data.merchant);
+
+      merchantName.textContent = data.merchant.name || "كافيه";
+      customerName.textContent = data.customer.name || "عميلنا العزيز";
+
+      if (data.merchant.logo_url) {
+        merchantLogo.innerHTML = `<img src="${data.merchant.logo_url}" alt="شعار الكافيه">`;
+      } else {
+        merchantLogo.textContent = "☕";
+      }
+
+      updateProgress(data.loyalty);
+      renderRoulette(data.loyalty);
+      renderWallet(data.wallet);
+      renderTransactions(data.last_transactions);
+
+      loadingCard.style.display = "none";
+      errorCard.style.display = "none";
+      appContent.style.display = "block";
+    }
+
+    async function loadPage() {
+      if (!token) {
+        showError("رابط العميل لا يحتوي على token.");
+        return;
+      }
+
+      const { data, error } = await client.rpc("customer_get_page", {
+        p_token: token
+      });
+
+      if (error) {
+        showError(error.message || "تعذر تحميل بيانات العميل.");
+        return;
+      }
+
+      if (!data || data.ok === false) {
+        showError(data?.message || "الرابط غير صالح أو منتهي.");
+        return;
+      }
+
+      renderPage(data);
+    }
+
+    spinBtn.addEventListener("click", async () => {
+      hideMsg(spinMsg);
+      spinResult.classList.remove("show");
+
+      if (!pendingTransactionId) {
+        showMsg(spinMsg, "لا توجد عملية مؤهلة للروليت.");
+        return;
+      }
+
+      spinBtn.disabled = true;
+      spinBtn.textContent = "جاري تدوير الروليت...";
+
+      const { data, error } = await client.rpc("customer_spin_roulette", {
+        p_token: token,
+        p_transaction_id: pendingTransactionId
+      });
+
+      if (error) {
+        spinBtn.disabled = false;
+        spinBtn.textContent = "العب الآن";
+        showMsg(spinMsg, error.message || "تعذر تشغيل الروليت.");
+        return;
+      }
+
+      if (!data || data.ok === false) {
+        spinBtn.disabled = true;
+        spinBtn.textContent = "تم استخدام الروليت";
+        showMsg(spinMsg, data?.message || "تعذر تشغيل الروليت.");
+        return;
+      }
+
+      const extraRotation = 1440 + Math.floor(Math.random() * 360);
+      currentRotation += extraRotation;
+      wheel.style.transform = "rotate(" + currentRotation + "deg)";
+
+      setTimeout(() => {
+        const reward = data.reward || {};
+        spinResult.classList.add("show");
+
+        if (reward.reward_type === "no_prize") {
+          spinResult.style.color = "var(--muted)";
+          spinResult.style.background = "rgba(111, 78, 55, 0.06)";
+          spinResult.style.borderColor = "var(--border)";
+          spinResult.textContent = "كانت النتيجة: " + (reward.title || "حظ أوفر");
+        } else {
+          spinResult.style.color = "var(--success)";
+          spinResult.style.background = "rgba(47, 133, 90, 0.08)";
+          spinResult.style.borderColor = "rgba(47, 133, 90, 0.18)";
+          spinResult.textContent = "مبروك! ربحت: " + (reward.title || "مكافأة");
+        }
+
+        if (data.loyalty) {
+          updateProgress(data.loyalty);
+        }
+
+        pendingTransactionId = null;
+        spinBtn.disabled = true;
+        spinBtn.textContent = "تم استخدام الروليت";
+
+        setTimeout(loadPage, 900);
+      }, 4100);
+    });
+
+    installBtn.addEventListener("click", () => {
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isAndroid = /android/i.test(navigator.userAgent);
+
+      if (isIOS) {
+        installSteps.innerHTML = `
+          <ol>
+            <li>اضغط زر المشاركة في أسفل المتصفح.</li>
+            <li>اختر: إضافة إلى الشاشة الرئيسية.</li>
+            <li>اضغط إضافة.</li>
+          </ol>
+        `;
+      } else if (isAndroid) {
+        installSteps.innerHTML = `
+          <ol>
+            <li>اضغط قائمة المتصفح ⋮.</li>
+            <li>اختر: إضافة إلى الشاشة الرئيسية.</li>
+            <li>اضغط تثبيت أو إضافة.</li>
+          </ol>
+        `;
+      } else {
+        installSteps.innerHTML = `
+          <ol>
+            <li>افتح الصفحة من الجوال.</li>
+            <li>استخدم خيار إضافة الصفحة للشاشة الرئيسية من المتصفح.</li>
+          </ol>
+        `;
+      }
+
+      installModal.classList.add("show");
+    });
+
+    closeInstallModal.addEventListener("click", () => {
+      installModal.classList.remove("show");
+    });
+
+    installModal.addEventListener("click", (e) => {
+      if (e.target === installModal) {
+        installModal.classList.remove("show");
+      }
+    });
+
+    loadPage();
+  </script>
+</body>
+</html>
