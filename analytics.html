@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>تحليلات التاجر | نظام ولاء الكافيهات</title>
+
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+
+  <style>
+    .analytics-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric-card {
+      background: rgba(255,255,255,.88);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(43, 33, 27, 0.08);
+    }
+
+    .metric-card span {
+      display: block;
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1.6;
+      min-height: 44px;
+    }
+
+    .metric-card strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--primary);
+      margin-top: 8px;
+    }
+
+    .wide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .chart-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .bar-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .bar-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .bar-sub {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .bar-track {
+      height: 13px;
+      background: rgba(111, 78, 55, 0.11);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transition: width .5s ease;
+    }
+
+    .list-card {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    .list-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 4px;
+    }
+
+    .insight-box {
+      border-radius: 22px;
+      padding: 16px;
+      background:
+        linear-gradient(135deg, rgba(111,78,55,.11), rgba(200,162,122,.13));
+      border: 1px solid var(--border);
+      line-height: 1.9;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(111, 78, 55, 0.06);
+      color: var(--muted);
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .wide-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-card {
+        border-radius: 20px;
+        padding: 16px;
+      }
+
+      .metric-card strong {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <h1>تحليلات التاجر</h1>
+        <p id="merchantInfo" class="subtitle" style="margin-bottom:0;">
+          جاري تحميل التحليلات...
+        </p>
+      </div>
+
+      <nav class="nav">
+        <a href="cashier.html">الكاشير</a>
+        <a href="settings.html">الإعدادات</a>
+        <a href="analytics.html">التحليلات</a>
+        <a href="#" id="logoutLink">تسجيل الخروج</a>
+      </nav>
+    </header>
+
+    <section id="loadingCard" class="card">
+      <h2>جاري تجهيز التحليلات...</h2>
+      <p class="muted">نقرأ العمليات والعملاء والروليت ونلخصها لك.</p>
+    </section>
+
+    <section id="errorCard" class="card" style="display:none;">
+      <h2>تعذر تحميل التحليلات</h2>
+      <p id="errorText" class="muted">حدث خطأ غير معروف.</p>
+    </section>
+
+    <section id="content" class="analytics-grid" style="display:none;">
+      <div class="cards-grid">
+        <div class="metric-card">
+          <span>إجمالي العملاء</span>
+          <strong id="customersCount">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>إجمالي عمليات الشراء</span>
+          <strong id="totalTransactions">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>إجمالي الأكواب</span>
+          <strong id="totalCups">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>عملاء مكررون</span>
+          <strong id="repeatCustomers">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>عمليات اليوم</span>
+          <strong id="todayTransactions">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>أكواب اليوم</span>
+          <strong id="todayCups">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>مكافآت متاحة</span>
+          <strong id="availableRewards">0</strong>
+        </div>
+
+        <div class="metric-card">
+          <span>مرات لعب الروليت</span>
+          <strong id="totalSpins">0</strong>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>قراءة سريعة</h2>
+            <p class="muted">ملخص تسويقي سريع من سلوك العملاء الحالي.</p>
+          </div>
+          <span class="pill">Insight</span>
+        </div>
+        <div id="insightBox" class="insight-box">-</div>
+      </section>
+
+      <div class="wide-grid">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>الزيارات حسب الأيام</h2>
+              <p class="muted">يعرض أي الأيام أقوى في زيارات العملاء.</p>
+            </div>
+            <span class="pill">Days</span>
+          </div>
+          <div id="weekdayChart" class="chart-list"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>الزيارات حسب الأوقات</h2>
+              <p class="muted">نفس الفترات التي حددناها للمشروع.</p>
+            </div>
+            <span class="pill">Time</span>
+          </div>
+          <div id="timeChart" class="chart-list"></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>آخر 6 أشهر</h2>
+            <p class="muted">مقارنة شهرية للزيارات والأكواب والعملاء.</p>
+          </div>
+          <span class="pill">Monthly</span>
+        </div>
+        <div id="monthlyChart" class="chart-list"></div>
+      </section>
+
+      <div class="wide-grid">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>أفضل العملاء</h2>
+              <p class="muted">أكثر العملاء شراءً حسب عدد الأكواب.</p>
+            </div>
+            <span class="pill success">VIP</span>
+          </div>
+          <div id="topCustomers" class="list-card"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>نتائج الروليت</h2>
+              <p class="muted">أكثر الجوائز ظهورًا في الروليت.</p>
+            </div>
+            <span class="pill">Roulette</span>
+          </div>
+          <div id="rouletteStats" class="list-card"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.APP_CONFIG.SUPABASE_URL,
+      window.APP_CONFIG.SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const logoutLink = document.getElementById("logoutLink");
+    const merchantInfo = document.getElementById("merchantInfo");
+
+    const loadingCard = document.getElementById("loadingCard");
+    const errorCard = document.getElementById("errorCard");
+    const errorText = document.getElementById("errorText");
+    const content = document.getElementById("content");
+
+    function n(value) {
+      return Number(value || 0);
+    }
+
+    function fmt(value) {
+      return new Intl.NumberFormat("ar-SA").format(n(value));
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "-";
+
+      try {
+        return new Intl.DateTimeFormat("ar-SA", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(new Date(dateValue));
+      } catch (e) {
+        return dateValue;
+      }
+    }
+
+    function applyTheme(merchant) {
+      document.documentElement.style.setProperty("--primary", merchant.primary_color || "#6F4E37");
+      document.documentElement.style.setProperty("--secondary", merchant.secondary_color || "#C8A27A");
+      document.documentElement.style.setProperty("--bg", merchant.background_color || "#F7F1EA");
+      document.documentElement.style.setProperty("--surface", merchant.surface_color || "#FFFFFF");
+      document.documentElement.style.setProperty("--text", merchant.text_color || "#2B211B");
+    }
+
+    async function requireSession() {
+      const { data } = await client.auth.getSession();
+
+      if (!data.session) {
+        window.location.href = "login.html";
+        return false;
+      }
+
+      return true;
+    }
+
+    function showError(text) {
+      loadingCard.style.display = "none";
+      content.style.display = "none";
+      errorCard.style.display = "block";
+      errorText.textContent = text || "تعذر تحميل التحليلات.";
+    }
+
+    function renderMetric(id, value) {
+      document.getElementById(id).textContent = fmt(value);
+    }
+
+    function renderBars(containerId, items, valueKey, subBuilder) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        el.innerHTML = '<div class="empty-state">لا توجد بيانات كافية بعد.</div>';
+        return;
+      }
+
+      const maxValue = Math.max(...items.map((x) => n(x[valueKey])), 1);
+
+      items.forEach((item) => {
+        const value = n(item[valueKey]);
+        const percent = Math.round((value / maxValue) * 100);
+
+        const div = document.createElement("div");
+        div.className = "bar-row";
+
+        div.innerHTML = `
+          <div class="bar-head">
+            <span>${item.label || item.month || "-"}</span>
+            <span>${fmt(value)}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${percent}%"></div>
+          </div>
+          <div class="bar-sub">${subBuilder ? subBuilder(item) : ""}</div>
+        `;
+
+        el.appendChild(div);
+      });
+    }
+
+    function renderTopCustomers(items) {
+      const el = document.getElementById("topCustomers");
+      el.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        el.innerHTML = '<div class="empty-state">لا توجد بيانات عملاء كافية بعد.</div>';
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${index + 1}. ${item.name || "عميل بدون اسم"}</strong>
+            <span class="muted">${item.phone || "-"} — آخر زيارة: ${formatDate(item.last_visit_at)}</span>
+          </div>
+          <span class="pill">${fmt(item.cups)} كوب</span>
+        `;
+
+        el.appendChild(div);
+      });
+    }
+
+    function renderRouletteStats(items) {
+      const el = document.getElementById("rouletteStats");
+      el.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        el.innerHTML = '<div class="empty-state">لم يتم لعب الروليت بعد.</div>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+
+        div.innerHTML = `
+          <div>
+            <strong>${item.title || "نتيجة"}</strong>
+            <span class="muted">${item.reward_type || "-"}</span>
+          </div>
+          <span class="pill">${fmt(item.spins)} مرة</span>
+        `;
+
+        el.appendChild(div);
+      });
+    }
+
+    function bestItem(items, key) {
+      if (!items || items.length === 0) return null;
+
+      return [...items].sort((a, b) => n(b[key]) - n(a[key]))[0];
+    }
+
+    function renderInsight(data) {
+      const summary = data.summary || {};
+      const bestDay = bestItem(data.weekday_stats, "visits");
+      const bestTime = bestItem(data.time_bucket_stats, "visits");
+      const repeat = n(summary.repeat_customers);
+      const customers = n(summary.customers_count);
+      const repeatRate = customers > 0 ? Math.round((repeat / customers) * 100) : 0;
+
+      let text = "";
+
+      if (bestDay && n(bestDay.visits) > 0) {
+        text += "أقوى يوم زيارة حاليًا هو " + bestDay.label + " بعدد " + fmt(bestDay.visits) + " زيارة. ";
+      } else {
+        text += "لا توجد زيارات كافية بعد لاستخراج أقوى يوم. ";
+      }
+
+      if (bestTime && n(bestTime.visits) > 0) {
+        text += "أقوى فترة شراء هي " + bestTime.label + " بعدد " + fmt(bestTime.visits) + " زيارة. ";
+      }
+
+      text += "نسبة العملاء المكررين تقريبًا " + repeatRate + "%، وهذا مؤشر مهم لنجاح برنامج الولاء.";
+
+      document.getElementById("insightBox").textContent = text;
+    }
+
+    function renderAnalytics(data) {
+      const summary = data.summary || {};
+
+      applyTheme(data.merchant || {});
+      merchantInfo.textContent = (data.merchant?.name || "الكافيه") + " — لوحة التحليلات";
+
+      renderMetric("customersCount", summary.customers_count);
+      renderMetric("totalTransactions", summary.total_transactions);
+      renderMetric("totalCups", summary.total_cups);
+      renderMetric("repeatCustomers", summary.repeat_customers);
+      renderMetric("todayTransactions", summary.today_transactions);
+      renderMetric("todayCups", summary.today_cups);
+      renderMetric("availableRewards", summary.available_rewards);
+      renderMetric("totalSpins", summary.total_spins);
+
+      renderInsight(data);
+
+      renderBars(
+        "weekdayChart",
+        data.weekday_stats || [],
+        "visits",
+        (item) => "الأكواب: " + fmt(item.cups) + " — العملاء: " + fmt(item.customers)
+      );
+
+      renderBars(
+        "timeChart",
+        data.time_bucket_stats || [],
+        "visits",
+        (item) => "الأكواب: " + fmt(item.cups) + " — العملاء: " + fmt(item.customers)
+      );
+
+      renderBars(
+        "monthlyChart",
+        data.monthly_stats || [],
+        "visits",
+        (item) => "الأكواب: " + fmt(item.cups) + " — العملاء: " + fmt(item.customers)
+      );
+
+      renderTopCustomers(data.top_customers || []);
+      renderRouletteStats(data.roulette_stats || []);
+
+      loadingCard.style.display = "none";
+      errorCard.style.display = "none";
+      content.style.display = "grid";
+    }
+
+    async function loadAnalytics() {
+      const ok = await requireSession();
+      if (!ok) return;
+
+      const { data, error } = await client.rpc("get_merchant_analytics");
+
+      if (error) {
+        showError(error.message || "تعذر تحميل التحليلات.");
+        return;
+      }
+
+      if (!data || data.ok === false) {
+        showError(data?.message || "تعذر تحميل التحليلات.");
+        return;
+      }
+
+      renderAnalytics(data);
+    }
+
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await client.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    loadAnalytics();
+  </script>
+</body>
+</html>
